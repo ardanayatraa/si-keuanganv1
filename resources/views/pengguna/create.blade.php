@@ -1,0 +1,62 @@
+<x-app-layout>
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Tambah Pengguna
+        </h1>
+
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <form action="{{ route('pengguna.store') }}" method="POST">
+                @csrf
+
+                <div class="space-y-4">
+                    {{-- Username --}}
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Username
+                        </label>
+                        <input id="username" name="username" type="text" value="{{ old('username') }}"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                        @error('username')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Email --}}
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Email
+                        </label>
+                        <input id="email" name="email" type="email" value="{{ old('email') }}"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                        @error('email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Password --}}
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Password
+                        </label>
+                        <input id="password" name="password" type="password"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                        @error('password')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <a href="{{ route('pengguna.index') }}"
+                        class="px-4 py-2 mr-2 border rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                        Batal
+                    </a>
+                    <button type="submit"
+                        class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</x-app-layout>
