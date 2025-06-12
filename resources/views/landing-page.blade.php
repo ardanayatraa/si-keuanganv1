@@ -218,16 +218,15 @@
                     <div class="ml-10 flex items-baseline space-x-6 lg:space-x-8">
                         <a href="#home" class="hover:text-accent transition-colors font-medium text-sm lg:text-base"
                             :class="scrolled ? 'text-gray-700' : 'text-white'">Beranda</a>
-                        <a href="#features" class="hover:text-accent transition-colors font-medium text-sm lg:text-base"
-                            :class="scrolled ? 'text-gray-700' : 'text-white'">Fitur</a>
                         <a href="#about" class="hover:text-accent transition-colors font-medium text-sm lg:text-base"
                             :class="scrolled ? 'text-gray-700' : 'text-white'">Tentang</a>
-                        <a href="#contact" class="hover:text-accent transition-colors font-medium text-sm lg:text-base"
-                            :class="scrolled ? 'text-gray-700' : 'text-white'">Kontak</a>
-                        <button
-                            class="elegant-button text-primary px-4 lg:px-6 py-2 font-semibold tracking-wide relative overflow-hidden rounded-full text-sm lg:text-base">
-                            Mulai Sekarang
-                        </button>
+                        <a href="/login">
+                            <button
+                                class="elegant-button text-primary px-4 lg:px-6 py-2 font-semibold tracking-wide relative overflow-hidden rounded-full text-sm lg:text-base">
+                                Mulai Sekarang
+                            </button>
+                        </a>
+
                     </div>
                 </div>
 
@@ -291,10 +290,7 @@
                             class="elegant-button text-primary px-8 lg:px-10 py-3 lg:py-4 text-lg font-bold transition-all transform hover:scale-105 hover:shadow-2xl relative overflow-hidden rounded-full">
                             <i class="fas fa-rocket mr-3"></i>Mulai Gratis
                         </button>
-                        <button
-                            class="dark-button text-white hover:bg-white/10 backdrop-blur-sm px-8 lg:px-10 py-3 lg:py-4 text-lg font-semibold transition-all rounded-full">
-                            <i class="fas fa-play mr-3"></i>Lihat Demo
-                        </button>
+
                     </div>
                 </div>
 
@@ -437,10 +433,7 @@
                     </p>
 
                     <div class="grid grid-cols-2 gap-4 lg:gap-8">
-                        <div class="text-center stats-card p-4 lg:p-6 rounded-2xl">
-                            <div class="text-2xl lg:text-4xl font-bold text-accent mb-2">10K+</div>
-                            <div class="text-gray-300 font-medium text-sm lg:text-base">Pengguna Aktif</div>
-                        </div>
+
                         <div class="text-center stats-card p-4 lg:p-6 rounded-2xl">
                             <div class="text-2xl lg:text-4xl font-bold text-accent mb-2">99.9%</div>
                             <div class="text-gray-300 font-medium text-sm lg:text-base">Uptime</div>
@@ -479,112 +472,6 @@
                             </li>
                         </ul>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="py-16 lg:py-24 gradient-bg relative overflow-hidden">
-        <div class="absolute inset-0">
-            <div class="absolute top-10 right-10 w-24 h-24 lg:w-32 lg:h-32 bg-accent/10 rounded-full floating-element">
-            </div>
-            <div class="absolute bottom-10 left-10 w-20 h-20 lg:w-24 lg:h-24 bg-accent/10 rounded-full floating-element"
-                style="animation-delay: 3s;"></div>
-        </div>
-        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="section-divider mb-8"></div>
-            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 lg:mb-8">
-                Siap Atur Keuangan dengan <span class="text-accent">Lebih Baik?</span>
-            </h2>
-            <p class="text-lg lg:text-xl text-gray-300 mb-8 lg:mb-12 leading-relaxed">
-                Bergabung dengan ribuan orang yang sudah merasakan mudahnya mengatur uang dengan platform kami
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 lg:gap-6 justify-center">
-                <button
-                    class="elegant-button text-primary px-10 lg:px-12 py-4 lg:py-5 text-lg font-bold transition-all transform hover:scale-105 hover:shadow-2xl relative overflow-hidden rounded-full">
-                    <i class="fas fa-rocket mr-3"></i>Mulai Gratis Sekarang
-                </button>
-                <button
-                    class="dark-button text-white hover:bg-white/10 backdrop-blur-sm px-10 lg:px-12 py-4 lg:py-5 text-lg font-semibold transition-all rounded-full">
-                    <i class="fas fa-phone mr-3"></i>Hubungi Kami
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-16 lg:py-24 bg-gradient-to-b from-light to-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 lg:mb-20">
-                <div class="section-divider mb-8"></div>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-6">Hubungi <span
-                        class="text-gradient">Kami</span></h2>
-                <p class="text-lg lg:text-xl text-gray-600">
-                    Ada pertanyaan? Tim kami siap bantu Anda
-                </p>
-            </div>
-
-            <div class="grid lg:grid-cols-2 gap-12 lg:gap-16">
-                <div>
-                    <div class="space-y-8 lg:space-y-10">
-                        <div class="flex items-start">
-                            <div
-                                class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-accent/10 to-accent/20 flex items-center justify-center mr-4 lg:mr-6 rounded-xl">
-                                <i class="fas fa-envelope text-accent text-lg lg:text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg lg:text-xl font-bold text-primary mb-2">Email</h3>
-                                <p class="text-gray-600 text-base lg:text-lg">support@pengaturuangku.my.id</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start">
-                            <div
-                                class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center mr-4 lg:mr-6 rounded-xl">
-                                <i class="fas fa-phone text-green-600 text-lg lg:text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg lg:text-xl font-bold text-primary mb-2">Telepon</h3>
-                                <p class="text-gray-600 text-base lg:text-lg">+62 21 1234 5678</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start">
-                            <div
-                                class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center mr-4 lg:mr-6 rounded-xl">
-                                <i class="fas fa-map-marker-alt text-blue-600 text-lg lg:text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg lg:text-xl font-bold text-primary mb-2">Alamat</h3>
-                                <p class="text-gray-600 text-base lg:text-lg">Jakarta, Indonesia</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="elegant-card p-6 lg:p-10 shadow-xl bg-gradient-to-br from-white to-gray-50 rounded-3xl">
-                    <form class="space-y-6 lg:space-y-8">
-                        <div>
-                            <label class="block text-sm font-semibold text-primary mb-3">Nama Lengkap</label>
-                            <input type="text"
-                                class="w-full px-4 lg:px-6 py-3 lg:py-4 border elegant-input rounded-xl focus:outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-primary mb-3">Email</label>
-                            <input type="email"
-                                class="w-full px-4 lg:px-6 py-3 lg:py-4 border elegant-input rounded-xl focus:outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-primary mb-3">Pesan</label>
-                            <textarea rows="5"
-                                class="w-full px-4 lg:px-6 py-3 lg:py-4 border elegant-input rounded-xl focus:outline-none transition-all resize-none"></textarea>
-                        </div>
-                        <button type="submit"
-                            class="w-full elegant-button text-primary py-3 lg:py-4 font-bold text-lg transition-all hover:shadow-xl relative overflow-hidden rounded-xl">
-                            <i class="fas fa-paper-plane mr-3"></i>Kirim Pesan
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>
@@ -629,35 +516,7 @@
                     </div>
                 </div>
 
-                <div>
-                    <h4 class="text-lg font-bold mb-4 lg:mb-6">Produk</h4>
-                    <ul class="space-y-2 lg:space-y-3 text-gray-400 text-sm lg:text-base">
-                        <li><a href="#" class="hover:text-accent transition-colors">Fitur</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">Harga</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">Demo</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">API</a></li>
-                    </ul>
-                </div>
 
-                <div>
-                    <h4 class="text-lg font-bold mb-4 lg:mb-6">Perusahaan</h4>
-                    <ul class="space-y-2 lg:space-y-3 text-gray-400 text-sm lg:text-base">
-                        <li><a href="#" class="hover:text-accent transition-colors">Tentang Kami</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">Karir</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">Blog</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">Press</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="text-lg font-bold mb-4 lg:mb-6">Dukungan</h4>
-                    <ul class="space-y-2 lg:space-y-3 text-gray-400 text-sm lg:text-base">
-                        <li><a href="#" class="hover:text-accent transition-colors">Help Center</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">Kontak</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-accent transition-colors">Terms of Service</a></li>
-                    </ul>
-                </div>
             </div>
 
             <div

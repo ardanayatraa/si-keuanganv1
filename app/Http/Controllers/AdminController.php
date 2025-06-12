@@ -20,15 +20,19 @@ class AdminController extends Controller
 
     public function store(Request $request)
     {
+        // Validasi hanya username & password
         $data = $request->validate([
-            'username'  => 'required|string|max:50',
-            'password'  => 'required|string|min:6',
-            'saldo'     => 'required|numeric',
+            'username' => 'required|string|max:50',
+            'password' => 'required|string|min:6',
         ]);
 
+        // Hash password sebelum simpan
+        $data['password'] = bcrypt($data['password']);
+
         Admin::create($data);
+
         return redirect()->route('admin.index')
-                         ->with('success','Admin berhasil dibuat.');
+                         ->with('success', 'Admin berhasil dibuat.');
     }
 
     public function show(Admin $admin)
@@ -43,25 +47,31 @@ class AdminController extends Controller
 
     public function update(Request $request, Admin $admin)
     {
+        // Validasi hanya username & (opsional) password
         $data = $request->validate([
-            'username'  => 'required|string|max:50',
-            'password'  => 'nullable|string|min:6',
-            'saldo'     => 'required|numeric',
+            'username' => 'required|string|max:50',
+            'password' => 'nullable|string|min:6',
         ]);
 
-        if (empty($data['password'])) {
+        if (! empty($data['password'])) {
+            // kalau ada password baru, hash dulu
+            $data['password'] = bcrypt($data['password']);
+        } else {
+            // hapus key biar tidak overwrite field lama
             unset($data['password']);
         }
 
         $admin->update($data);
+
         return redirect()->route('admin.index')
-                         ->with('success','Admin berhasil diperbarui.');
+                         ->with('success', 'Admin berhasil diperbarui.');
     }
 
     public function destroy(Admin $admin)
     {
         $admin->delete();
+
         return redirect()->route('admin.index')
-                         ->with('success','Admin berhasil dihapus.');
+                         ->with('success', 'Admin berhasil dihapus.');
     }
 }

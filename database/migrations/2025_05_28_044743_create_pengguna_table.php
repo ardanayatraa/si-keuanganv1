@@ -12,7 +12,9 @@ class CreatePenggunaTable extends Migration
             $table->id('id_pengguna');
             $table->string('username', 50);
             $table->string('email', 50);
-            $table->string('password', 25);
+            $table->string('password');
+            $table->string('saldo')->default('0');
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }

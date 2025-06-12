@@ -3,19 +3,57 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Pengguna extends Model
+class Pengguna extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'pengguna';
     protected $primaryKey = 'id_pengguna';
     public $incrementing = false;
     protected $keyType = 'string';
 
-    protected $fillable = ['username','email','password'];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int,string>
+     */
+    protected $fillable = [
+        'username',
+        'email',
+        'password',
+        'saldo',
+        'foto',
+    ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array<int,string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string,string>
+     */
+    protected $casts = [
+        // jika tidak ada kolom email_verified_at, bisa dihapus
+        // 'email_verified_at' => 'datetime',
+    ];
+
+    /**
+     * Disable default timestamps if tabel tidak pakai created_at/updated_at
+     */
+    public $timestamps = false;
+
+    // relasi...
     public function kategoriPemasukan()
     {
         return $this->hasMany(KategoriPemasukan::class, 'id_pengguna');

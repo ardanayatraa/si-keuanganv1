@@ -34,14 +34,14 @@
             aria-label="Main navigation">
 
             <!-- Sidebar Header -->
-            <div class="flex items-center justify-between h-16 px-6 bg-blue-500 text-white">
+            <div class="flex items-center justify-between h-16 px-6 bg-yellow-500 text-white">
                 <h1 class="text-xl font-semibold">
                     Laravel
                 </h1>
 
                 <!-- Mobile close button -->
                 <button id="sidebar-close"
-                    class="lg:hidden p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    class="lg:hidden p-2 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300"
                     aria-label="Close sidebar">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
@@ -142,16 +142,16 @@
                         <li>
                             <a href="{{ $item['url'] }}"
                                 class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
-                                      {{ $isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}"
+                                      {{ $isActive ? 'bg-yellow-50 text-yellow-600' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}"
                                 aria-current="{{ $isActive ? 'page' : 'false' }}">
 
                                 <!-- Active indicator (blue border on right) -->
                                 @if ($isActive)
-                                    <div class="absolute right-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg"></div>
+                                    <div class="absolute right-0 top-0 bottom-0 w-1 bg-yellow-500 rounded-l-lg"></div>
                                 @endif
 
                                 <!-- Menu Icon -->
-                                <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ $isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500' }}"
+                                <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ $isActive ? 'text-yellow-600' : 'text-gray-400 group-hover:text-gray-500' }}"
                                     fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="{{ $item['icon'] }}"></path>
@@ -197,7 +197,7 @@
                     <div class="flex items-center">
                         <!-- Mobile hamburger button -->
                         <button id="mobile-menu-button"
-                            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                             aria-label="Open sidebar" aria-expanded="false" aria-controls="sidebar">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -218,11 +218,11 @@
                         <!-- User Profile Button -->
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open"
-                                class="flex items-center space-x-2 px-3 py-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                                class="flex items-center space-x-2 px-3 py-2 rounded-full bg-yellow-500 text-white hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-colors duration-200"
                                 id="user-menu-button" aria-expanded="false" aria-haspopup="true">
 
                                 <!-- User Avatar -->
-                                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center">
                                     <span class="text-white text-sm font-medium">
                                         {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
                                     </span>

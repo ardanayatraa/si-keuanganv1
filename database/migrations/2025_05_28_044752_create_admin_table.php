@@ -12,7 +12,6 @@ class CreateAdminTable extends Migration
             $table->id('id_admin');
             $table->string('username', 50);
             $table->text('password');
-            $table->double('saldo');
             $table->timestamps();
         });
     }

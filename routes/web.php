@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\KategoriPemasukanController;
@@ -16,98 +18,107 @@ use App\Http\Controllers\PiutangController;
 use App\Http\Controllers\PembayaranPiutangController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\AdminController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Auth\CustomAuthenticatedSessionController;
 
-
+// Landing Page
 Route::get('/', function () {
     return view('landing-page');
 });
 
+// Auth Custom (override Fortify)
+Route::post('/login',  [CustomAuthenticatedSessionController::class, 'store'])->name('login');
+Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+// ✅ Akses publik untuk register
+Route::get('/pengguna/create', [PenggunaController::class, 'create'])->name('pengguna.create');
+Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
+
+// 🔐 Area yang butuh login
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-         ->name('dashboard');
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // 🔐 Protected: Pengguna (selain create/store)
+    Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
+    Route::get('/pengguna/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
+    Route::match(['put', 'patch'], '/pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
+    Route::delete('/pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+
+    // Resource routes
     Route::resources([
-        'pengguna'            => PenggunaController::class,
-        'kategori-pemasukan'  => KategoriPemasukanController::class,
-        'kategori-pengeluaran'=> KategoriPengeluaranController::class,
-        'pemasukan'           => PemasukanController::class,
-        'pengeluaran'         => PengeluaranController::class,
-        'anggaran'            => AnggaranController::class,
-        'rekening'            => RekeningController::class,
-        'transfer'            => TransferController::class,
-        'utang'               => UtangController::class,
-        'pembayaran-utang'    => PembayaranUtangController::class,
-        'piutang'             => PiutangController::class,
-        'pembayaran-piutang'  => PembayaranPiutangController::class,
-        'laporan'             => LaporanController::class,
-        'admin'               => AdminController::class,
+        'kategori-pemasukan'   => KategoriPemasukanController::class,
+        'kategori-pengeluaran' => KategoriPengeluaranController::class,
+        'pemasukan'            => PemasukanController::class,
+        'pengeluaran'          => PengeluaranController::class,
+        'anggaran'             => AnggaranController::class,
+        'rekening'             => RekeningController::class,
+        'transfer'             => TransferController::class,
+        'utang'                => UtangController::class,
+        'pembayaran-utang'     => PembayaranUtangController::class,
+        'piutang'              => PiutangController::class,
+        'pembayaran-piutang'   => PembayaranPiutangController::class,
+        'laporan'              => LaporanController::class,
+        'admin'                => AdminController::class,
     ]);
-Route::post('/laporan/generate', [LaporanController::class, 'generate'])
-    ->name('laporan.generate');
-    Route::prefix('kategori')->name('kategori.')->group(function(){
 
-    // INDEX
-    Route::get('/', function(Request $request){
-        $type = $request->query('type','pengeluaran');
-        if($type==='pemasukan'){
-            return app(KategoriPemasukanController::class)->index();
-        }
-        return app(KategoriPengeluaranController::class)->index();
-    })->name('index');
+    Route::post('/laporan/generate', [LaporanController::class, 'generate'])->name('laporan.generate');
 
-    // CREATE
-    Route::get('create', function(Request $request){
-        $type = $request->query('type','pengeluaran');
-        if($type==='pemasukan'){
-            return app(KategoriPemasukanController::class)->create();
-        }
-        return app(KategoriPengeluaranController::class)->create();
-    })->name('create');
+    // 🔀 Dynamic kategori route
+    Route::prefix('kategori')->name('kategori.')->group(function () {
+        Route::get('/', function (Request $request) {
+            $type = $request->query('type', 'pengeluaran');
+            return $type === 'pemasukan'
+                ? app(KategoriPemasukanController::class)->index()
+                : app(KategoriPengeluaranController::class)->index();
+        })->name('index');
 
-    // STORE
-    Route::post('/', function(Request $request){
-        $type = $request->query('type','pengeluaran');
-        if($type==='pemasukan'){
-            return app(KategoriPemasukanController::class)->store($request);
-        }
-        return app(KategoriPengeluaranController::class)->store($request);
-    })->name('store');
+        Route::get('create', function (Request $request) {
+            $type = $request->query('type', 'pengeluaran');
+            return $type === 'pemasukan'
+                ? app(KategoriPemasukanController::class)->create()
+                : app(KategoriPengeluaranController::class)->create();
+        })->name('create');
 
-    // EDIT
-    Route::get('{id}/edit', function(Request $request, $id){
-        $type = $request->query('type','pengeluaran');
-        if($type==='pemasukan'){
-            $m = \App\Models\KategoriPemasukan::findOrFail($id);
-            return app(KategoriPemasukanController::class)->edit($m);
-        }
-        $m = \App\Models\KategoriPengeluaran::findOrFail($id);
-        return app(KategoriPengeluaranController::class)->edit($m);
-    })->name('edit');
+        Route::post('/', function (Request $request) {
+            $type = $request->query('type', 'pengeluaran');
+            return $type === 'pemasukan'
+                ? app(KategoriPemasukanController::class)->store($request)
+                : app(KategoriPengeluaranController::class)->store($request);
+        })->name('store');
 
-    // UPDATE
-    Route::match(['put','patch'], '{id}', function(Request $request, $id){
-        $type = $request->query('type','pengeluaran');
-        if($type==='pemasukan'){
-            $m = \App\Models\KategoriPemasukan::findOrFail($id);
-            return app(KategoriPemasukanController::class)->update($request, $m);
-        }
-        $m = \App\Models\KategoriPengeluaran::findOrFail($id);
-        return app(KategoriPengeluaranController::class)->update($request, $m);
-    })->name('update');
+        Route::get('{id}/edit', function (Request $request, $id) {
+            $type = $request->query('type', 'pengeluaran');
+            $model = $type === 'pemasukan'
+                ? \App\Models\KategoriPemasukan::findOrFail($id)
+                : \App\Models\KategoriPengeluaran::findOrFail($id);
+            return $type === 'pemasukan'
+                ? app(KategoriPemasukanController::class)->edit($model)
+                : app(KategoriPengeluaranController::class)->edit($model);
+        })->name('edit');
 
-    // DESTROY
-    Route::delete('{id}', function(Request $request, $id){
-        $type = $request->query('type','pengeluaran');
-        if($type==='pemasukan'){
-            $m = \App\Models\KategoriPemasukan::findOrFail($id);
-            return app(KategoriPemasukanController::class)->destroy($m);
-        }
-        $m = \App\Models\KategoriPengeluaran::findOrFail($id);
-        return app(KategoriPengeluaranController::class)->destroy($m);
-    })->name('destroy');
-});
+        Route::match(['put', 'patch'], '{id}', function (Request $request, $id) {
+            $type = $request->query('type', 'pengeluaran');
+            $model = $type === 'pemasukan'
+                ? \App\Models\KategoriPemasukan::findOrFail($id)
+                : \App\Models\KategoriPengeluaran::findOrFail($id);
+            return $type === 'pemasukan'
+                ? app(KategoriPemasukanController::class)->update($request, $model)
+                : app(KategoriPengeluaranController::class)->update($request, $model);
+        })->name('update');
+
+        Route::delete('{id}', function (Request $request, $id) {
+            $type = $request->query('type', 'pengeluaran');
+            $model = $type === 'pemasukan'
+                ? \App\Models\KategoriPemasukan::findOrFail($id)
+                : \App\Models\KategoriPengeluaran::findOrFail($id);
+            return $type === 'pemasukan'
+                ? app(KategoriPemasukanController::class)->destroy($model)
+                : app(KategoriPengeluaranController::class)->destroy($model);
+        })->name('destroy');
+    });
 });

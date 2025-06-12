@@ -21,12 +21,12 @@
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Username</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Saldo</th>
+                            Username
+                        </th>
                         <th
                             class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Aksi</th>
+                            Aksi
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -34,9 +34,6 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
                                 {{ $admin->username }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                {{ number_format($admin->saldo, 2, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <a href="{{ route('admin.edit', $admin->id_admin) }}"
@@ -56,7 +53,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="2" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                 Belum ada data admin.
                             </td>
                         </tr>

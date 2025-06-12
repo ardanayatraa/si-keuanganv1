@@ -32,18 +32,6 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-
-                    {{-- Saldo --}}
-                    <div>
-                        <label for="saldo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Saldo
-                        </label>
-                        <input id="saldo" name="saldo" type="number" step="0.01" value="{{ old('saldo') }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
-                        @error('saldo')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
                 </div>
 
                 <div class="mt-6 flex justify-end">

@@ -5,7 +5,7 @@
         $colors = [
             'bg-red-100 text-red-800',
             'bg-green-100 text-green-800',
-            'bg-blue-100 text-blue-800',
+            'bg-yellow-100 text-yellow-800',
             'bg-yellow-100 text-yellow-800',
             'bg-purple-100 text-purple-800',
             'bg-pink-100 text-pink-800',
@@ -19,13 +19,13 @@
         <ul class="flex border-b">
             <li class="mr-4">
                 <a href="{{ url('/kategori?type=pengeluaran') }}"
-                    class="py-2 px-4 block {{ $type === 'pengeluaran' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600' }}">
+                    class="py-2 px-4 block {{ $type === 'pengeluaran' ? 'border-b-2 border-yellow-600 text-yellow-600' : 'text-gray-600 hover:text-yellow-600' }}">
                     Pengeluaran
                 </a>
             </li>
             <li>
                 <a href="{{ url('/kategori?type=pemasukan') }}"
-                    class="py-2 px-4 block {{ $type === 'pemasukan' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600' }}">
+                    class="py-2 px-4 block {{ $type === 'pemasukan' ? 'border-b-2 border-yellow-600 text-yellow-600' : 'text-gray-600 hover:text-yellow-600' }}">
                     Pemasukan
                 </a>
             </li>
