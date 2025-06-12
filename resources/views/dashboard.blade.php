@@ -7,7 +7,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Total Saldo</h3>
-                <p class="mt-2 text-3xl font-bold text-indigo-600">
+                <p class="mt-2 text-3xl font-bold text-yellow-600">
                     {{ number_format($totalSaldo, 0, ',', '.') }}
                 </p>
             </div>

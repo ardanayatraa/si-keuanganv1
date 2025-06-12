@@ -14,7 +14,7 @@
                             Pengguna
                         </label>
                         <select id="id_pengguna" name="id_pengguna"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white">
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
                             <option value="">-- Pilih Pengguna --</option>
                             @foreach (\App\Models\Pengguna::all() as $user)
                                 <option value="{{ $user->id_pengguna }}"
@@ -34,7 +34,7 @@
                             Rekening
                         </label>
                         <select id="id_rekening" name="id_rekening"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white">
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
                             <option value="">-- Pilih Rekening --</option>
                             @foreach (\App\Models\Rekening::all() as $r)
                                 <option value="{{ $r->id_rekening }}"
@@ -54,7 +54,7 @@
                             Jumlah
                         </label>
                         <input id="jumlah" name="jumlah" type="number" step="0.01" value="{{ old('jumlah') }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                         @error('jumlah')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -67,7 +67,7 @@
                         </label>
                         <input id="tanggal_pinjam" name="tanggal_pinjam" type="date"
                             value="{{ old('tanggal_pinjam') }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                         @error('tanggal_pinjam')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -81,7 +81,7 @@
                         </label>
                         <input id="tanggal_jatuh_tempo" name="tanggal_jatuh_tempo" type="date"
                             value="{{ old('tanggal_jatuh_tempo') }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                         @error('tanggal_jatuh_tempo')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -93,7 +93,7 @@
                             Deskripsi
                         </label>
                         <textarea id="deskripsi" name="deskripsi" rows="3"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
                             placeholder="Opsional…">{{ old('deskripsi') }}</textarea>
                         @error('deskripsi')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -107,7 +107,7 @@
                         Batal
                     </a>
                     <button type="submit"
-                        class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
+                        class="px-6 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
                         Simpan
                     </button>
                 </div>

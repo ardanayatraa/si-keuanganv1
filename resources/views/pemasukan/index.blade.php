@@ -6,7 +6,7 @@
 
         <div class="flex justify-between items-center mb-4">
             <a href="{{ route('pemasukan.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
+                class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
                 Tambah Pemasukan
             </a>
             @if (session('success'))

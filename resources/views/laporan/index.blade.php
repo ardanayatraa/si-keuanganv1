@@ -10,7 +10,7 @@
             <div class="flex items-center space-x-4">
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Jenis Periode:</label>
                 <select name="filter_type" id="filter_type"
-                    class="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    class="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
                     onchange="handleFilterChange(this.value)">
                     <option value="">-- Pilih Tipe --</option>
                     <option value="minggu" @selected(old('filter_type') == 'minggu')>Mingguan</option>
@@ -24,7 +24,7 @@
                     Pilih Tanggal (untuk minggu)
                 </label>
                 <input type="date" name="filter_date" id="filter_date" value="{{ old('filter_date') }}"
-                    class="mt-1 block w-1/3 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                    class="mt-1 block w-1/3 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                 @error('filter_date')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -35,7 +35,7 @@
                     Pilih Bulan
                 </label>
                 <input type="month" name="filter_month" id="filter_month" value="{{ old('filter_month') }}"
-                    class="mt-1 block w-1/3 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                    class="mt-1 block w-1/3 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                 @error('filter_month')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -47,7 +47,7 @@
                 </label>
                 <input type="number" name="filter_year" id="filter_year" min="2000" max="2100"
                     value="{{ old('filter_year') }}"
-                    class="mt-1 block w-1/4 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
+                    class="mt-1 block w-1/4 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
                     placeholder="2025" />
                 @error('filter_year')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -55,7 +55,7 @@
             </div>
 
             <button type="submit"
-                class="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
+                class="mt-4 px-6 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
                 Generate Laporan
             </button>
         </form>

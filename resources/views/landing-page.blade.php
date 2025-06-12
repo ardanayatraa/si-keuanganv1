@@ -402,10 +402,10 @@
                     </p>
                 </div>
 
-                <div class="feature-card p-6 lg:p-8 shadow-lg group rounded-2xl border-l-4 border-indigo-500">
+                <div class="feature-card p-6 lg:p-8 shadow-lg group rounded-2xl border-l-4 border-yellow-500">
                     <div
-                        class="w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 rounded-xl">
-                        <i class="fas fa-cogs text-xl lg:text-2xl text-indigo-600"></i>
+                        class="w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-yellow-100 to-yellow-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 rounded-xl">
+                        <i class="fas fa-cogs text-xl lg:text-2xl text-yellow-600"></i>
                     </div>
                     <h3 class="text-lg lg:text-xl font-bold mb-4 text-primary">Mudah Digunakan</h3>
                     <p class="text-gray-600 leading-relaxed text-sm lg:text-base">

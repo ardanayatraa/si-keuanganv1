@@ -50,7 +50,7 @@
                     <input id="nama_kategori" name="nama_kategori" type="text"
                         value="{{ old('nama_kategori', $kategoriPengeluaran->nama_kategori) }}"
                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm
-                                  focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                                  focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                     @error('nama_kategori')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -63,7 +63,7 @@
                     </label>
                     <textarea id="deskripsi" name="deskripsi" rows="3"
                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm
-                                     focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
+                                     focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
                         placeholder="Opsional…">{{ old('deskripsi', $kategoriPengeluaran->deskripsi) }}</textarea>
                     @error('deskripsi')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -84,12 +84,12 @@
                                 class="flex items-center justify-center p-2 cursor-pointer rounded-lg
                                      border border-gray-300 dark:border-gray-600
                                      hover:bg-gray-200 dark:hover:bg-gray-700
-                                     {{ $checked ? 'border-2 border-indigo-500 bg-indigo-100 dark:bg-indigo-900' : '' }}">
+                                     {{ $checked ? 'border-2 border-yellow-500 bg-yellow-100 dark:bg-yellow-900' : '' }}">
                                 <input type="radio" id="icon_{{ $cls }}" name="icon"
                                     value="{{ $cls }}" class="sr-only" {{ $checked ? 'checked' : '' }} />
                                 <i
                                     class="bx {{ $cls }} text-2xl
-                                           {{ $checked ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300' }}"></i>
+                                           {{ $checked ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-300' }}"></i>
                             </label>
                         @endforeach
                     </div>
@@ -121,19 +121,19 @@
                 label.addEventListener('click', () => {
                     // hapus kelas highlight dari semua
                     labels.forEach(l => {
-                        l.classList.remove('border-2', 'border-indigo-500', 'bg-indigo-100',
-                            'dark:bg-indigo-900');
-                        l.querySelector('i').classList.remove('text-indigo-600',
-                            'dark:text-indigo-400');
+                        l.classList.remove('border-2', 'border-yellow-500', 'bg-yellow-100',
+                            'dark:bg-yellow-900');
+                        l.querySelector('i').classList.remove('text-yellow-600',
+                            'dark:text-yellow-400');
                         l.querySelector('i').classList.add('text-gray-600',
                             'dark:text-gray-300');
                     });
                     // tambahkan ke yang diklik
-                    label.classList.add('border-2', 'border-indigo-500', 'bg-indigo-100',
-                        'dark:bg-indigo-900');
+                    label.classList.add('border-2', 'border-yellow-500', 'bg-yellow-100',
+                        'dark:bg-yellow-900');
                     const iconEl = label.querySelector('i');
                     iconEl.classList.remove('text-gray-600', 'dark:text-gray-300');
-                    iconEl.classList.add('text-indigo-600', 'dark:text-indigo-400');
+                    iconEl.classList.add('text-yellow-600', 'dark:text-yellow-400');
                 });
             });
         });

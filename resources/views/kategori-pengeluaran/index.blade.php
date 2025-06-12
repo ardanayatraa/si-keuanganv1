@@ -9,7 +9,7 @@
             'bg-yellow-100 text-yellow-800',
             'bg-purple-100 text-purple-800',
             'bg-pink-100 text-pink-800',
-            'bg-indigo-100 text-indigo-800',
+            'bg-yellow-100 text-yellow-800',
             'bg-teal-100 text-teal-800',
         ];
     @endphp
@@ -37,7 +37,7 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Daftar Kategori {{ $label }}</h1>
             <a href="{{ route('kategori.create', ['type' => $type]) }}"
-                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
+                class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
                 Tambah
             </a>
         </div>

@@ -16,7 +16,7 @@
                             Deskripsi
                         </label>
                         <textarea id="deskripsi" name="deskripsi" rows="3"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
                             placeholder="Opsional…">{{ old('deskripsi', $anggaran->deskripsi) }}</textarea>
                         @error('deskripsi')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -30,7 +30,7 @@
                         </label>
                         <input id="jumlah_batas" name="jumlah_batas" type="number" step="0.01"
                             value="{{ old('jumlah_batas', $anggaran->jumlah_batas) }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                         @error('jumlah_batas')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -43,7 +43,7 @@
                         </label>
                         <input id="periode_awal" name="periode_awal" type="date"
                             value="{{ old('periode_awal', $anggaran->periode_awal?->format('Y-m-d')) }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                         @error('periode_awal')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -56,7 +56,7 @@
                         </label>
                         <input id="periode_akhir" name="periode_akhir" type="date"
                             value="{{ old('periode_akhir', $anggaran->periode_akhir?->format('Y-m-d')) }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                         @error('periode_akhir')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror

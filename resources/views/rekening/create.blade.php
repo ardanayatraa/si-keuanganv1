@@ -15,7 +15,7 @@
                             Pengguna
                         </label>
                         <select id="id_pengguna" name="id_pengguna"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white">
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
                             <option value="">-- Pilih Pengguna --</option>
                             @foreach (\App\Models\Pengguna::all() as $user)
                                 <option value="{{ $user->id_pengguna }}"
@@ -35,7 +35,7 @@
                             Nama Rekening
                         </label>
                         <input id="nama_rekening" name="nama_rekening" type="text" value="{{ old('nama_rekening') }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                         @error('nama_rekening')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -47,7 +47,7 @@
                             Saldo
                         </label>
                         <input id="saldo" name="saldo" type="number" step="0.01" value="{{ old('saldo') }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                         @error('saldo')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -60,7 +60,7 @@
                         Batal
                     </a>
                     <button type="submit"
-                        class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
+                        class="px-6 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
                         Simpan
                     </button>
                 </div>

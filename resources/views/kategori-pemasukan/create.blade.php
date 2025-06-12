@@ -39,7 +39,7 @@
                     </label>
                     <select id="id_pengguna" name="id_pengguna"
                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm
-                                   focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white">
+                                   focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
                         <option value="">-- Pilih Pengguna --</option>
                         @foreach (\App\Models\Pengguna::all() as $user)
                             <option value="{{ $user->id_pengguna }}"
@@ -60,7 +60,7 @@
                     </label>
                     <input id="nama_kategori" name="nama_kategori" type="text" value="{{ old('nama_kategori') }}"
                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm
-                                  focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white" />
+                                  focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
                     @error('nama_kategori')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -73,7 +73,7 @@
                     </label>
                     <textarea id="deskripsi" name="deskripsi" rows="3"
                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm
-                                     focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
+                                     focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
                         placeholder="Opsional…">{{ old('deskripsi') }}</textarea>
                     @error('deskripsi')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -93,14 +93,14 @@
                                 class="flex items-center justify-center p-2 cursor-pointer rounded-lg transition
                                        border border-gray-300 dark:border-gray-600
                                        hover:bg-gray-200 dark:hover:bg-gray-700
-                                       peer-checked:border-2 peer-checked:border-indigo-500 peer-checked:bg-indigo-100 dark:peer-checked:bg-indigo-900">
+                                       peer-checked:border-2 peer-checked:border-yellow-500 peer-checked:bg-yellow-100 dark:peer-checked:bg-yellow-900">
                                 <input type="radio" name="icon" id="icon_{{ $cls }}"
                                     value="{{ $cls }}" class="sr-only peer"
                                     {{ $checked ? 'checked' : '' }} />
                                 <i
                                     class="bx {{ $cls }} text-2xl
-                                           {{ $checked ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300' }}
-                                           peer-checked:text-indigo-600 peer-checked:dark:text-indigo-400"></i>
+                                           {{ $checked ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-300' }}
+                                           peer-checked:text-yellow-600 peer-checked:dark:text-yellow-400"></i>
                             </label>
                         @endforeach
                     </div>
@@ -117,7 +117,7 @@
                           hover:bg-gray-100 dark:hover:bg-gray-700">
                     Batal
                 </a>
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700">
+                <button type="submit" class="px-6 py-2 bg-yellow-600 text-white rounded-md shadow hover:bg-yellow-700">
                     Simpan
                 </button>
             </div>
