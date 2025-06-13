@@ -250,9 +250,13 @@
                     class="block px-3 py-2 text-gray-700 hover:text-accent font-medium rounded-lg">Tentang</a>
                 <a href="#contact"
                     class="block px-3 py-2 text-gray-700 hover:text-accent font-medium rounded-lg">Kontak</a>
-                <button class="w-full text-left elegant-button text-primary px-3 py-2 mt-2 font-semibold rounded-lg">
-                    Mulai Sekarang
-                </button>
+                <a href="/login">
+
+                    <button
+                        class="w-full text-left elegant-button text-primary px-3 py-2 mt-2 font-semibold rounded-lg">
+                        Mulai Sekarang
+                    </button>
+                </a>
             </div>
         </div>
     </nav>
