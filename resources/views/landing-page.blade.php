@@ -269,7 +269,7 @@
                 style="animation-delay: 4s;"></div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-7xl sm:pt-20px mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
                 <div class="text-white animate-fade-in-up text-center lg:text-left">
                     <div class="inline-block px-4 py-2 bg-accent/20 backdrop-blur-sm mb-6 rounded-full">
