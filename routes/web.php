@@ -19,6 +19,38 @@ use App\Http\Controllers\PembayaranPiutangController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\CustomAuthenticatedSessionController;
+use App\Http\Controllers\GoogleDriveController;
+use App\Http\Controllers\LaporanBackupController;
+
+
+Route::get('/google/auth', function () {
+    $client = new \Google_Client();
+    $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
+    $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
+    $client->setRedirectUri(route('google.callback'));
+    $client->setAccessType('offline');
+    $client->setPrompt('consent');
+    $client->setScopes(['https://www.googleapis.com/auth/drive.file']);
+
+    return redirect($client->createAuthUrl());
+})->name('google.auth');
+
+Route::get('/google/callback', function () {
+    $client = new \Google_Client();
+    $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
+    $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
+    $client->setRedirectUri(route('google.callback'));
+
+    $code = request('code');
+    $token = $client->fetchAccessTokenWithAuthCode($code);
+
+    return response()->json([
+        'access_token' => $token['access_token'] ?? null,
+        'refresh_token' => $token['refresh_token'] ?? '(kosong - mungkin pernah diambil sebelumnya)',
+        'expires_in' => $token['expires_in'] ?? null,
+    ]);
+})->name('google.callback');
+
 
 // Landing Page
 Route::get('/', function () {
@@ -33,13 +65,18 @@ Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])
 Route::get('/pengguna/create', [PenggunaController::class, 'create'])->name('pengguna.create');
 Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
 
+Route::middleware(['auth'])->group(function () {
+    Route::post('/laporan/backup', [LaporanBackupController::class, 'backup'])->name('laporan.backup');
+    Route::post('/laporan/restore', [LaporanBackupController::class, 'restore'])->name('laporan.restore');
+});
 // 🔐 Area yang butuh login
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-
+ Route::get('/backup', [GoogleDriveController::class, 'backup'])->name('drive.backup');
+    Route::get('/restore', [GoogleDriveController::class, 'restore'])->name('drive.restore');
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
