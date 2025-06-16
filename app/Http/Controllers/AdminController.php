@@ -20,9 +20,10 @@ class AdminController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi hanya username & password
+        // Validasi username, email, & password
         $data = $request->validate([
-            'username' => 'required|string|max:50',
+            'username' => 'required|string|max:50|unique:admin,username',
+            'email'    => 'required|email|max:100|unique:admin,email',
             'password' => 'required|string|min:6',
         ]);
 
@@ -47,17 +48,16 @@ class AdminController extends Controller
 
     public function update(Request $request, Admin $admin)
     {
-        // Validasi hanya username & (opsional) password
+        // Validasi username, email & (opsional) password
         $data = $request->validate([
-            'username' => 'required|string|max:50',
+            'username' => 'required|string|max:50|unique:admin,username,' . $admin->id_admin . ',id_admin',
+            'email'    => 'required|email|max:100|unique:admin,email,' . $admin->id_admin . ',id_admin',
             'password' => 'nullable|string|min:6',
         ]);
 
         if (! empty($data['password'])) {
-            // kalau ada password baru, hash dulu
             $data['password'] = bcrypt($data['password']);
         } else {
-            // hapus key biar tidak overwrite field lama
             unset($data['password']);
         }
 

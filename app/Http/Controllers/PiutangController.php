@@ -25,13 +25,15 @@ class PiutangController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_pengguna'        => 'required|exists:pengguna,id_pengguna',
             'id_rekening'        => 'required|exists:rekening,id_rekening',
             'jumlah'             => 'required|numeric|min:0.01',
             'tanggal_pinjam'     => 'required|date',
             'tanggal_jatuh_tempo'=> 'required|date|after_or_equal:tanggal_pinjam',
             'deskripsi'          => 'nullable|string',
         ]);
+
+        // ambil id_pengguna dari yang login
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
 
         DB::transaction(function() use ($data) {
             // 1) Catat pengeluaran—uang keluar dari rekening saat memberi pinjaman
@@ -40,7 +42,7 @@ class PiutangController extends Controller
                 'id_rekening'  => $data['id_rekening'],
                 'jumlah'       => $data['jumlah'],
                 'tanggal'      => $data['tanggal_pinjam'],
-                'id_kategori'  => null, // atau kategori khusus “Pemberian Piutang”
+                'id_kategori'  => null,
                 'deskripsi'    => 'Pinjamkan uang (Piutang)',
             ]);
 
@@ -81,7 +83,6 @@ class PiutangController extends Controller
     public function update(Request $request, Piutang $piutang)
     {
         $data = $request->validate([
-            'id_pengguna'        => 'required|exists:pengguna,id_pengguna',
             'id_rekening'        => 'required|exists:rekening,id_rekening',
             'jumlah'             => 'required|numeric|min:0.01',
             'tanggal_pinjam'     => 'required|date',
@@ -89,26 +90,25 @@ class PiutangController extends Controller
             'deskripsi'          => 'nullable|string',
         ]);
 
+        // ambil id_pengguna dari yang login
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
+
         DB::transaction(function() use ($data, $piutang) {
-            // 1) Refund saldo rekening lama (karena pinjaman diubah/cancel)
+            // 1) Refund saldo rekening lama
             Rekening::where('id_rekening', $piutang->id_rekening)
                    ->increment('saldo', $piutang->jumlah);
 
             // 2) Hapus entri pengeluaran lama
             Pengeluaran::where([
-                ['id_pengguna', '=', $piutang->id_pengguna],
-                ['id_rekening', '=', $piutang->id_rekening],
-                ['jumlah', '=', $piutang->jumlah],
-                ['tanggal', '=', $piutang->tanggal_pinjam],
-                ['deskripsi', 'like', '%Piutang%'],
+                ['id_pengeluaran', '=', $piutang->id_pengeluaran],
             ])->delete();
 
-            // 3) Update piutang
+            // 3) Update piutang (reset sisa dan status)
             $piutang->update([
                 'id_pengguna'        => $data['id_pengguna'],
                 'id_rekening'        => $data['id_rekening'],
                 'jumlah'             => $data['jumlah'],
-                'sisa_piutang'       => $data['jumlah'],       // reset sisa
+                'sisa_piutang'       => $data['jumlah'],
                 'tanggal_pinjam'     => $data['tanggal_pinjam'],
                 'tanggal_jatuh_tempo'=> $data['tanggal_jatuh_tempo'],
                 'deskripsi'          => $data['deskripsi'] ?? null,
@@ -116,7 +116,7 @@ class PiutangController extends Controller
                 'id_pemasukan'       => null,
             ]);
 
-            // 4) Buat entri pengeluaran baru untuk piutang yang diperbarui
+            // 4) Buat ulang entri pengeluaran untuk piutang
             Pengeluaran::create([
                 'id_pengguna'  => $data['id_pengguna'],
                 'id_rekening'  => $data['id_rekening'],
@@ -126,7 +126,7 @@ class PiutangController extends Controller
                 'deskripsi'    => 'Pinjamkan uang (Piutang)',
             ]);
 
-            // 5) Kurangi saldo rekening baru
+            // 5) Kurangi saldo rekening kembali
             Rekening::where('id_rekening', $data['id_rekening'])
                    ->decrement('saldo', $data['jumlah']);
         });
@@ -142,13 +142,9 @@ class PiutangController extends Controller
             Rekening::where('id_rekening', $piutang->id_rekening)
                    ->increment('saldo', $piutang->jumlah);
 
-            // 2) Hapus entri pengeluaran terkait piutang
+            // 2) Hapus entri pengeluaran terkait
             Pengeluaran::where([
-                ['id_pengguna', '=', $piutang->id_pengguna],
-                ['id_rekening', '=', $piutang->id_rekening],
-                ['jumlah', '=', $piutang->jumlah],
-                ['tanggal', '=', $piutang->tanggal_pinjam],
-                ['deskripsi', 'like', '%Piutang%'],
+                ['id_pengeluaran', '=', $piutang->id_pengeluaran],
             ])->delete();
 
             // 3) Hapus record piutang

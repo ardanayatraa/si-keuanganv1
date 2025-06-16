@@ -27,13 +27,16 @@ class PengeluaranController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_pengguna' => 'required|string|exists:pengguna,id_pengguna',
+            // hapus id_pengguna dari validasi
             'id_rekening' => 'required|string|exists:rekening,id_rekening',
             'jumlah'      => 'required|numeric|min:0.01',
             'tanggal'     => 'required|date',
             'id_kategori' => 'required|string|exists:kategori_pengeluaran,id_kategori_pengeluaran',
             'deskripsi'   => 'nullable|string',
         ]);
+
+        // SET id_pengguna otomatis dari yang login
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
 
         // 1) Cek anggaran: cari anggaran user + kategori di mana tanggal masuk dalam rentang
         $anggaran = Anggaran::where('id_pengguna', $data['id_pengguna'])
@@ -54,7 +57,6 @@ class PengeluaranController extends Controller
 
             // 3) jika penambahan ini melebihi batas
             if (($totalSudah + $data['jumlah']) > $anggaran->jumlah_batas) {
-                // redirect back dengan pesan error di field 'jumlah'
                 return redirect()->back()
                     ->withErrors([
                         'jumlah' => "Total pengeluaran untuk kategori ini di periode "
@@ -68,7 +70,6 @@ class PengeluaranController extends Controller
                     ->withInput();
             }
         }
-        // jika tidak ada anggaran yang relevan, skip pengecekan; tetap bisa disimpan
 
         DB::transaction(function() use ($data) {
             // 4) Buat record pengeluaran
@@ -104,7 +105,6 @@ class PengeluaranController extends Controller
             'deskripsi'   => 'nullable|string',
         ]);
 
-        // 1) Cek anggaran serupa di update: user dan kategori bisa diambil dari $pengeluaran
         $anggaran = Anggaran::where('id_pengguna', $pengeluaran->id_pengguna)
             ->where('id_kategori', $data['id_kategori'])
             ->where('periode_awal', '<=', $data['tanggal'])
@@ -112,7 +112,6 @@ class PengeluaranController extends Controller
             ->first();
 
         if ($anggaran) {
-            // 2) Hitung total pengeluaran yang sudah ada untuk user+kategori di rentang tersebut (kecuali record ini sendiri)
             $totalSudah = Pengeluaran::where('id_pengguna', $pengeluaran->id_pengguna)
                 ->where('id_kategori', $data['id_kategori'])
                 ->whereBetween('tanggal', [
@@ -122,7 +121,6 @@ class PengeluaranController extends Controller
                 ->where('id_pengeluaran', '!=', $pengeluaran->id_pengeluaran)
                 ->sum('jumlah');
 
-            // 3) jika update ini melebihi batas
             if (($totalSudah + $data['jumlah']) > $anggaran->jumlah_batas) {
                 return redirect()->back()
                     ->withErrors([
@@ -137,17 +135,16 @@ class PengeluaranController extends Controller
                     ->withInput();
             }
         }
-        // jika tidak ada anggaran yang relevan, skip pengecekan
 
         DB::transaction(function() use ($data, $pengeluaran) {
-            // 4) "Refund" pengeluaran lama → tambahkan kembali saldo lama
+            // refund saldo lama
             Rekening::where('id_rekening', $pengeluaran->id_rekening)
                    ->increment('saldo', $pengeluaran->jumlah);
 
-            // 5) Update record pengeluaran
+            // update pengeluaran
             $pengeluaran->update($data);
 
-            // 6) Kurangi saldo berdasarkan nilai baru
+            // kurangi saldo baru
             Rekening::where('id_rekening', $data['id_rekening'])
                    ->decrement('saldo', $data['jumlah']);
         });
@@ -159,11 +156,11 @@ class PengeluaranController extends Controller
     public function destroy(Pengeluaran $pengeluaran)
     {
         DB::transaction(function() use ($pengeluaran) {
-            // 1) Tambahkan kembali saldo karena pengeluaran dihapus
+            // kembalikan saldo sebelum hapus
             Rekening::where('id_rekening', $pengeluaran->id_rekening)
                    ->increment('saldo', $pengeluaran->jumlah);
 
-            // 2) Hapus record pengeluaran
+            // hapus record
             $pengeluaran->delete();
         });
 

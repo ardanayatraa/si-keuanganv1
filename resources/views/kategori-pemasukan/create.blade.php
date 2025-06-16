@@ -32,27 +32,6 @@
             @csrf
 
             <div class="space-y-5">
-                {{-- Pengguna --}}
-                <div>
-                    <label for="id_pengguna" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Pengguna
-                    </label>
-                    <select id="id_pengguna" name="id_pengguna"
-                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm
-                                   focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
-                        <option value="">-- Pilih Pengguna --</option>
-                        @foreach (\App\Models\Pengguna::all() as $user)
-                            <option value="{{ $user->id_pengguna }}"
-                                {{ old('id_pengguna') == $user->id_pengguna ? 'selected' : '' }}>
-                                {{ $user->username }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('id_pengguna')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
                 {{-- Nama Kategori --}}
                 <div>
                     <label for="nama_kategori" class="block text-sm font-medium text-gray-700 dark:text-gray-300">

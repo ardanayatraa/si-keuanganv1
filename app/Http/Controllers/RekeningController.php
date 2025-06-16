@@ -21,12 +21,15 @@ class RekeningController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_pengguna'   => 'required|string|max:50',
             'nama_rekening' => 'required|string|max:50',
             'saldo'         => 'required|numeric',
         ]);
 
+        // ambil id_pengguna dari yang login
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
+
         Rekening::create($data);
+
         return redirect()->route('rekening.index')
                          ->with('success','Rekening berhasil dibuat.');
     }
@@ -49,6 +52,7 @@ class RekeningController extends Controller
         ]);
 
         $rekening->update($data);
+
         return redirect()->route('rekening.index')
                          ->with('success','Rekening berhasil diperbarui.');
     }
@@ -56,6 +60,7 @@ class RekeningController extends Controller
     public function destroy(Rekening $rekening)
     {
         $rekening->delete();
+
         return redirect()->route('rekening.index')
                          ->with('success','Rekening berhasil dihapus.');
     }

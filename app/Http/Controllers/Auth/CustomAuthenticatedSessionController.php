@@ -25,7 +25,7 @@ class CustomAuthenticatedSessionController extends FortifyController
             }
 
             // 2) Coba login Admin
-            $admin = Admin::where('username', $request->email)->first();
+            $admin = Admin::where('email', $request->email)->first();
             if ($admin && Hash::check($request->password, $admin->password)) {
                 auth()->guard('admin')->login($admin);
                 session(['role' => 'admin']);
@@ -38,7 +38,7 @@ class CustomAuthenticatedSessionController extends FortifyController
             return redirect()->back()
                 ->withInput($request->only('email'))
                 ->withErrors([
-                    'email' => 'Login gagal. Periksa kembali username/email dan password.',
+                    'email' => 'Login gagal. Periksa kembali email dan password.',
                 ]);
         }
     }

@@ -21,13 +21,16 @@ class KategoriPemasukanController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_pengguna'           => 'required|string|max:50',
-            'nama_kategori'         => 'required|string',
-            'deskripsi'             => 'nullable|string',
-            'icon'                  => 'nullable|string|max:100',
+            'nama_kategori' => 'required|string',
+            'deskripsi'     => 'nullable|string',
+            'icon'          => 'nullable|string|max:100',
         ]);
 
+        // ambil id_pengguna dari yang login
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
+
         KategoriPemasukan::create($data);
+
         return redirect()->route('kategori-pemasukan.index')
                          ->with('success','Kategori Pemasukan berhasil dibuat.');
     }
@@ -51,6 +54,7 @@ class KategoriPemasukanController extends Controller
         ]);
 
         $kategoriPemasukan->update($data);
+
         return redirect()->route('kategori-pemasukan.index')
                          ->with('success','Kategori Pemasukan berhasil diperbarui.');
     }
@@ -58,6 +62,7 @@ class KategoriPemasukanController extends Controller
     public function destroy(KategoriPemasukan $kategoriPemasukan)
     {
         $kategoriPemasukan->delete();
+
         return redirect()->route('kategori-pemasukan.index')
                          ->with('success','Kategori Pemasukan berhasil dihapus.');
     }

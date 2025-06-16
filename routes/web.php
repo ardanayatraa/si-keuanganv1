@@ -104,7 +104,7 @@ Route::middleware([
     ]);
 
     Route::post('/laporan/generate', [LaporanController::class, 'generate'])->name('laporan.generate');
-
+ Route::get('/print/{laporan}', [LaporanController::class, 'print'])->name('laporan.print');
     // 🔀 Dynamic kategori route
     Route::prefix('kategori')->name('kategori.')->group(function () {
         Route::get('/', function (Request $request) {

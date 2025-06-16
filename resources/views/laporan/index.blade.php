@@ -1,134 +1,134 @@
 <x-app-layout>
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Laporan Keuangan
-        </h1>
+    <div class="bg-white p-6 rounded-xl shadow space-y-6">
+        {{-- Pesan Berhasil --}}
+        @if (session('success'))
+            <div class="px-4 py-3 rounded border border-green-400 bg-green-100 text-green-800 mb-4">
+                {{ session('success') }}
+            </div>
+        @endif
 
-        {{-- Form Pilih Periode --}}
-        <form action="{{ route('laporan.generate') }}" method="POST" class="space-y-4 mb-6">
-            @csrf
+        {{-- Pesan Gagal --}}
+        @if (session('error'))
+            <div class="px-4 py-3 rounded border border-red-400 bg-red-100 text-red-800 mb-4">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        {{-- Pesan Validasi --}}
+        @if ($errors->any())
+            <div class="px-4 py-3 rounded border border-yellow-400 bg-yellow-100 text-yellow-800 mb-4">
+                <ul class="list-disc pl-5 space-y-1">
+                    @foreach ($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        <h1 class="text-2xl font-bold text-gray-800">Laporan Keuangan</h1>
+
+        {{-- Backup & Restore --}}
+        <div class="flex space-x-4">
+            <form action="{{ route('laporan.backup') }}" method="POST">@csrf
+                <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    Backup ke Google Drive
+                </button>
+            </form>
+            <form action="{{ route('laporan.restore') }}" method="POST">@csrf
+                <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                    Restore dari Google Drive
+                </button>
+            </form>
+        </div>
+
+        {{-- Form Generate --}}
+        <form action="{{ route('laporan.generate') }}" method="POST" class="space-y-4">@csrf
             <div class="flex items-center space-x-4">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Jenis Periode:</label>
-                <select name="filter_type" id="filter_type"
-                    class="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
-                    onchange="handleFilterChange(this.value)">
-                    <option value="">-- Pilih Tipe --</option>
+                <label class="font-medium text-gray-700">Periode:</label>
+                <select name="filter_type" onchange="handleFilter(this.value)"
+                    class="border border-gray-300 rounded p-2 focus:ring-yellow-500 focus:border-yellow-500">
+                    <option value="">-- Pilih --</option>
                     <option value="minggu" @selected(old('filter_type') == 'minggu')>Mingguan</option>
                     <option value="bulan" @selected(old('filter_type') == 'bulan')>Bulanan</option>
                     <option value="tahun" @selected(old('filter_type') == 'tahun')>Tahunan</option>
                 </select>
             </div>
-
-            <div id="input-mingguan" class="hidden">
-                <label for="filter_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Pilih Tanggal (untuk minggu)
-                </label>
-                <input type="date" name="filter_date" id="filter_date" value="{{ old('filter_date') }}"
-                    class="mt-1 block w-1/3 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
-                @error('filter_date')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+            <div id="input-minggu" class="hidden">
+                <input type="date" name="filter_date" value="{{ old('filter_date') }}"
+                    class="border border-gray-300 rounded p-2 w-1/3">
             </div>
-
-            <div id="input-bulanan" class="hidden">
-                <label for="filter_month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Pilih Bulan
-                </label>
-                <input type="month" name="filter_month" id="filter_month" value="{{ old('filter_month') }}"
-                    class="mt-1 block w-1/3 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
-                @error('filter_month')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+            <div id="input-bulan" class="hidden">
+                <input type="month" name="filter_month" value="{{ old('filter_month') }}"
+                    class="border border-gray-300 rounded p-2 w-1/3">
             </div>
-
-            <div id="input-tahunan" class="hidden">
-                <label for="filter_year" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Pilih Tahun
-                </label>
-                <input type="number" name="filter_year" id="filter_year" min="2000" max="2100"
-                    value="{{ old('filter_year') }}"
-                    class="mt-1 block w-1/4 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
-                    placeholder="2025" />
-                @error('filter_year')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+            <div id="input-tahun" class="hidden">
+                <input type="number" name="filter_year" min="2000" max="2100" value="{{ old('filter_year') }}"
+                    class="border border-gray-300 rounded p-2 w-1/4" placeholder="2025">
             </div>
-
-            <button type="submit"
-                class="mt-4 px-6 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
+            <button class="px-6 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
                 Generate Laporan
             </button>
         </form>
 
-        {{-- Daftar Laporan (History) --}}
+        {{-- Daftar Laporan --}}
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
+            <table class="min-w-full table-auto divide-y divide-gray-200">
+                <thead class="bg-gray-100">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Periode</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Total Pemasukan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Total Pengeluaran</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Saldo Akhir</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Dibuat Pada</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Periode</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Masuk</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Keluar</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Saldo Akhir</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Dibuat</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($items as $item)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                {{ $item->periode }}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm text-gray-800">{{ $item->periode }}</td>
+                            <td class="px-4 py-2 text-sm text-gray-800">
+                                Rp {{ number_format($item->total_pemasukan, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                {{ number_format($item->total_pemasukan, 2, ',', '.') }}
+                            <td class="px-4 py-2 text-sm text-gray-800">
+                                Rp {{ number_format($item->total_pengeluaran, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                {{ number_format($item->total_pengeluaran, 2, ',', '.') }}
+                            <td class="px-4 py-2 text-sm text-gray-800">
+                                Rp {{ number_format($item->saldo_akhir, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                {{ number_format($item->saldo_akhir, 2, ',', '.') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
+                            <td class="px-4 py-2 text-sm text-gray-800">
                                 {{ $item->created_at->format('d M Y – H:i') }}
+                            </td>
+                            <td class="px-4 py-2 text-sm">
+                                <a href="{{ route('laporan.print', $item->id_laporan) }}" target="_blank"
+                                    class="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700">
+                                    Print PDF
+                                </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                Belum ada laporan.
-                            </td>
+                            <td colspan="6" class="px-4 py-2 text-center text-gray-500">Belum ada laporan.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
+        {{-- Pagination --}}
+        <div class="mt-4">
+            {{ $items->links() }}
+        </div>
     </div>
 
-    {{-- Script untuk menampilkan input sesuai filter_type --}}
     <script>
-        function handleFilterChange(value) {
-            document.getElementById('input-mingguan').classList.add('hidden');
-            document.getElementById('input-bulanan').classList.add('hidden');
-            document.getElementById('input-tahunan').classList.add('hidden');
-
-            if (value === 'minggu') {
-                document.getElementById('input-mingguan').classList.remove('hidden');
-            } else if (value === 'bulan') {
-                document.getElementById('input-bulanan').classList.remove('hidden');
-            } else if (value === 'tahun') {
-                document.getElementById('input-tahunan').classList.remove('hidden');
-            }
+        function handleFilter(val) {
+            ['minggu', 'bulan', 'tahun'].forEach(type => {
+                document.getElementById('input-' + type)
+                    .classList.toggle('hidden', val !== type);
+            });
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const oldType = "{{ old('filter_type') }}";
-            if (oldType) {
-                handleFilterChange(oldType);
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            handleFilter("{{ old('filter_type') }}");
         });
     </script>
 </x-app-layout>

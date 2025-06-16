@@ -16,7 +16,6 @@ class UtangController extends Controller
      */
     public function index()
     {
-        // Ambil semua utang, eager load relasi pengguna dan rekening
         $items = Utang::with(['pengguna', 'rekening'])->get();
         return view('utang.index', compact('items'));
     }
@@ -26,21 +25,17 @@ class UtangController extends Controller
      */
     public function create()
     {
-        // Kirim semua rekening agar user memilih sumber utang (rekening dia sendiri)
         $rekenings = Rekening::all();
         return view('utang.create', compact('rekenings'));
     }
 
     /**
      * Simpan utang baru.
-     * - Pastikan kategori "Utang" ada untuk pengguna tersebut (firstOrCreate).
-     * - Buat record Utang, lalu catat Pemasukan (karena uang utang masuk ke rekening).
-     * - Update saldo rekening (increment).
      */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_pengguna'         => 'required|exists:pengguna,id_pengguna',
+            // 'id_pengguna' dihapus dari validasi
             'id_rekening'         => 'required|exists:rekening,id_rekening',
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
@@ -48,8 +43,11 @@ class UtangController extends Controller
             'deskripsi'           => 'nullable|string',
         ]);
 
+        // SET id_pengguna otomatis
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
+
         DB::transaction(function() use ($data) {
-            // 1) Simpan record Utang (kita meminjam uang)
+            // 1) Simpan record Utang
             $utang = Utang::create([
                 'id_pengguna'         => $data['id_pengguna'],
                 'id_rekening'         => $data['id_rekening'],
@@ -57,25 +55,23 @@ class UtangController extends Controller
                 'tanggal_pinjam'      => $data['tanggal_pinjam'],
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
                 'deskripsi'           => $data['deskripsi'] ?? null,
-                'sisa_utang'          => $data['jumlah'],       // inisialisasi sisa utang sama dengan jumlah
+                'sisa_utang'          => $data['jumlah'],
                 'status'              => 'belum dibayar',
             ]);
 
-            // 2) Pastikan kategori "Utang" tersedia untuk pengguna ini
-                    $kategoriUtang = KategoriPemasukan::where('id_pengguna', $data['id_pengguna'])
-                        ->where('nama_kategori', 'Utang')
-                        ->first();
+            // 2) Pastikan kategori "Utang" ada
+            $kategoriUtang = KategoriPemasukan::firstOrCreate(
+                [
+                    'id_pengguna'   => $data['id_pengguna'],
+                    'nama_kategori' => 'Utang',
+                ],
+                [
+                    'deskripsi' => 'Kategori untuk mencatat penerimaan utang',
+                    'icon'      => 'fas fa-hand-holding-usd',
+                ]
+            );
 
-                    if (!$kategoriUtang) {
-                        $kategoriUtang = KategoriPemasukan::create([
-                            'id_pengguna'   => $data['id_pengguna'],
-                            'nama_kategori' => 'Utang',
-                            'deskripsi'     => 'Kategori untuk mencatat penerimaan utang',
-                            'icon'          => 'fas fa-hand-holding-usd',
-                        ]);
-                    }
-
-            // 3) Catat Pemasukan: uang utang masuk ke rekening
+            // 3) Catat Pemasukan
             Pemasukan::create([
                 'id_pengguna' => $data['id_pengguna'],
                 'jumlah'      => $data['jumlah'],
@@ -85,7 +81,7 @@ class UtangController extends Controller
                 'id_rekening' => $data['id_rekening'],
             ]);
 
-            // 4) Tambah saldo rekening
+            // 4) Update saldo rekening
             Rekening::where('id_rekening', $data['id_rekening'])
                    ->increment('saldo', $data['jumlah']);
         });
@@ -114,15 +110,11 @@ class UtangController extends Controller
 
     /**
      * Perbarui data utang.
-     * - Revert Pemasukan lama → kurangi saldo rekening yang dipakai saat pinjam dulu.
-     * - Update Utang (reset sisa dan status).
-     * - Buat ulang Pemasukan baru sesuai data yang diperbarui.
-     * - Increment saldo rekening baru.
      */
     public function update(Request $request, Utang $utang)
     {
         $data = $request->validate([
-            'id_pengguna'         => 'required|exists:pengguna,id_pengguna',
+            // 'id_pengguna' dihapus dari validasi
             'id_rekening'         => 'required|exists:rekening,id_rekening',
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
@@ -130,19 +122,21 @@ class UtangController extends Controller
             'deskripsi'           => 'nullable|string',
         ]);
 
+        // SET id_pengguna otomatis (meski tidak berubah)
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
+
         DB::transaction(function() use ($data, $utang) {
-            // 1) Revert Pemasukan lama (hapus dan kurangi saldo rekening)
+            // 1) Hapus & refund Pemasukan lama
             \App\Models\Pemasukan::where([
                 ['deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%'],
                 ['tanggal', '=', $utang->tanggal_pinjam],
                 ['jumlah', '=', $utang->jumlah],
                 ['id_rekening', '=', $utang->id_rekening],
             ])->delete();
-
             Rekening::where('id_rekening', $utang->id_rekening)
                    ->decrement('saldo', $utang->jumlah);
 
-            // 2) Update field Utang (reset sisa dan status kembali “belum dibayar”)
+            // 2) Update Utang
             $utang->update([
                 'id_pengguna'         => $data['id_pengguna'],
                 'id_rekening'         => $data['id_rekening'],
@@ -154,7 +148,7 @@ class UtangController extends Controller
                 'status'              => 'belum dibayar',
             ]);
 
-            // 3) Pastikan kategori “Utang” tetap ada (jika pindah pengguna, create jika perlu)
+            // 3) Pastikan kategori Utang
             $kategoriUtang = KategoriPemasukan::firstOrCreate(
                 [
                     'id_pengguna'   => $data['id_pengguna'],
@@ -166,7 +160,7 @@ class UtangController extends Controller
                 ]
             );
 
-            // 4) Buat ulang Pemasukan baru sesuai data terbaru
+            // 4) Buat ulang Pemasukan baru
             Pemasukan::create([
                 'id_pengguna' => $data['id_pengguna'],
                 'jumlah'      => $data['jumlah'],
@@ -176,7 +170,7 @@ class UtangController extends Controller
                 'id_rekening' => $data['id_rekening'],
             ]);
 
-            // 5) Tambah saldo rekening baru
+            // 5) Tambah saldo rekening
             Rekening::where('id_rekening', $data['id_rekening'])
                    ->increment('saldo', $data['jumlah']);
         });
@@ -187,24 +181,21 @@ class UtangController extends Controller
 
     /**
      * Hapus satu utang.
-     * - Revert Pemasukan terkait (hapus dan kurangi saldo rekening),
-     * - Hapus record Utang.
      */
     public function destroy(Utang $utang)
     {
         DB::transaction(function() use ($utang) {
-            // 1) Hapus Pemasukan terkait utang (mengurangi saldo kembali)
+            // Hapus Pemasukan terkait & refund saldo
             \App\Models\Pemasukan::where([
                 ['deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%'],
                 ['tanggal', '=', $utang->tanggal_pinjam],
                 ['jumlah', '=', $utang->jumlah],
                 ['id_rekening', '=', $utang->id_rekening],
             ])->delete();
-
             Rekening::where('id_rekening', $utang->id_rekening)
                    ->decrement('saldo', $utang->jumlah);
 
-            // 2) Hapus Utang
+            // Hapus Utang
             $utang->delete();
         });
 

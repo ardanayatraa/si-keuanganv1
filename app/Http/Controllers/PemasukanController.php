@@ -26,13 +26,16 @@ class PemasukanController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_pengguna' => 'required|string|max:50',
+            // hapus id_pengguna dari validasi
             'id_rekening' => 'required|string|exists:rekening,id_rekening',
             'jumlah'      => 'required|numeric|min:0.01',
             'tanggal'     => 'required|date',
             'id_kategori' => 'required|string|max:50',
             'deskripsi'   => 'nullable|string',
         ]);
+
+        // SET id_pengguna otomatis dari yang login
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
 
         DB::transaction(function() use ($data) {
             // 1) Buat record pemasukan

@@ -21,13 +21,16 @@ class KategoriPengeluaranController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_pengguna'             => 'required|string|max:50',
-            'nama_kategori'           => 'required|string',
-            'deskripsi'               => 'nullable|string',
-            'icon'                    => 'nullable|string|max:100',
+            'nama_kategori' => 'required|string',
+            'deskripsi'     => 'nullable|string',
+            'icon'          => 'nullable|string|max:100',
         ]);
 
+        // ambil id_pengguna dari yang login
+        $data['id_pengguna'] = auth()->user()->id_pengguna;
+
         KategoriPengeluaran::create($data);
+
         return redirect()->route('kategori-pengeluaran.index')
                          ->with('success','Kategori Pengeluaran berhasil dibuat.');
     }
@@ -51,6 +54,7 @@ class KategoriPengeluaranController extends Controller
         ]);
 
         $kategoriPengeluaran->update($data);
+
         return redirect()->route('kategori-pengeluaran.index')
                          ->with('success','Kategori Pengeluaran berhasil diperbarui.');
     }

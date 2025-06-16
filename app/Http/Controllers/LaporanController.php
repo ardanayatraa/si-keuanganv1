@@ -7,96 +7,145 @@ use App\Models\Pemasukan;
 use App\Models\Pengeluaran;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanController extends Controller
 {
     /**
-     * Tampilkan form + list laporan (history).
+     * Tampilkan form + list laporan.
      */
-    public function index()
-    {
-        $items = Laporan::with('pengguna')
-                        ->orderBy('created_at', 'desc')
-                        ->get();
+   public function index()
+{
+    // ambil 10 per halaman, eager-load pengguna
+    $items = Laporan::with('pengguna')
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10);
 
-        return view('laporan.index', compact('items'));
-    }
+    return view('laporan.index', compact('items'));
+}
+
 
     /**
-     * Tangani form generate laporan.
-     * Simpan hasil ringkasan (totalP, totalPeng, saldo, dan label periode).
+     * Proses generate laporan.
      */
     public function generate(Request $request)
+{
+    $request->validate([
+        'filter_type'  => 'required|in:minggu,bulan,tahun',
+        'filter_date'  => 'nullable|date|required_if:filter_type,minggu',
+        'filter_month' => 'nullable|date_format:Y-m|required_if:filter_type,bulan',
+        'filter_year'  => 'nullable|integer|min:2000|required_if:filter_type,tahun',
+    ]);
+
+    $userId = auth()->id();
+    $type   = $request->input('filter_type');
+
+    // Tentukan start/end & label
+    if ($type === 'minggu') {
+        $sel   = Carbon::parse($request->input('filter_date'));
+        $start = $sel->startOfWeek()->startOfDay();
+        $end   = $sel->endOfWeek()->endOfDay();
+        $label = 'Minggu ' . $start->format('d M Y') . ' – ' . $end->format('d M Y');
+    }
+    elseif ($type === 'bulan') {
+        [$year, $month] = explode('-', $request->input('filter_month'));
+        $start = Carbon::create($year, $month, 1)->startOfDay();
+        $end   = Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
+        $label = $start->format('F Y');
+    }
+    else {
+        $year  = (int) $request->input('filter_year');
+        $start = Carbon::create($year, 1, 1)->startOfDay();
+        $end   = Carbon::create($year, 12, 31)->endOfDay();
+        $label = 'Tahun ' . $year;
+    }
+
+    // Hitung ringkasan
+    $totalPemasukan = Pemasukan::where('id_pengguna', $userId)
+        ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+        ->sum('jumlah');
+
+    $totalPengeluaran = Pengeluaran::where('id_pengguna', $userId)
+        ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+        ->sum('jumlah');
+
+    $saldoAkhir = $totalPemasukan - $totalPengeluaran;
+
+    // Cek apakah sudah ada laporan untuk periode ini
+    $laporan = Laporan::where('id_pengguna', $userId)
+                      ->where('periode', $label)
+                      ->first();
+
+    if ($laporan) {
+        // Update existing
+        $laporan->update([
+            'total_pemasukan'   => $totalPemasukan,
+            'total_pengeluaran' => $totalPengeluaran,
+            'saldo_akhir'       => $saldoAkhir,
+        ]);
+        $message = 'Laporan untuk ' . $label . ' berhasil diperbarui.';
+    } else {
+        // Buat baru
+        Laporan::create([
+            'id_pengguna'       => $userId,
+            'total_pemasukan'   => $totalPemasukan,
+            'total_pengeluaran' => $totalPengeluaran,
+            'saldo_akhir'       => $saldoAkhir,
+            'periode'           => $label,
+        ]);
+        $message = 'Laporan untuk ' . $label . ' berhasil dibuat.';
+    }
+
+    return redirect()->route('laporan.index')
+                     ->with('success', $message);
+}
+
+
+    /**
+     * Cetak PDF laporan beserta detail kategori.
+     */
+    public function print(Laporan $laporan)
     {
-
-            $request->validate([
-                'filter_type'  => 'required|in:minggu,bulan,tahun',
-
-                // Hanya wajib jika filter_type == "minggu",
-                // tapi biarkan null (dan skip date‐check) bila bukan "minggu"
-                'filter_date'  => 'nullable|date|required_if:filter_type,minggu',
-
-                // Hanya wajib jika filter_type == "bulan",
-                // dan bila terisi, harus berupa "YYYY-MM"
-                'filter_month' => 'nullable|date_format:Y-m|required_if:filter_type,bulan',
-
-                // Hanya wajib jika filter_type == "tahun",
-                // dan bila terisi, harus integer minimal 2000
-                'filter_year'  => 'nullable|integer|min:2000|required_if:filter_type,tahun',
-            ]);
-
-
-        $userId = 1;
-        $type   = $request->input('filter_type');
-        $start  = null;
-        $end    = null;
-        $label  = '';
-
-        if ($type === 'minggu') {
-            $selected = Carbon::parse($request->input('filter_date'));
-            $start = $selected->copy()->startOfWeek()->startOfDay();
-            $end   = $selected->copy()->endOfWeek()->endOfDay();
-            $label = 'Minggu '
-                   . $start->format('d M Y')
-                   . ' – '
-                   . $end->format('d M Y');
-
-        } elseif ($type === 'bulan') {
-            [$year, $month] = explode('-', $request->input('filter_month'));
-            $start = Carbon::createFromDate($year, $month, 1)->startOfDay();
-            $end   = Carbon::createFromDate($year, $month, 1)->endOfMonth()->endOfDay();
-            $label = $start->format('F Y'); // misal "Juni 2025"
-
-        } else { // tahun
-            $year  = (int) $request->input('filter_year');
-            $start = Carbon::createFromDate($year, 1, 1)->startOfDay();
-            $end   = Carbon::createFromDate($year, 12, 31)->endOfDay();
-            $label = 'Tahun ' . $year;
+        // Parse periode → start/end
+        $label = $laporan->periode;
+        if (Str::startsWith($label, 'Minggu ')) {
+            [$from, $to] = explode(' – ', Str::after($label, 'Minggu '));
+            $start = Carbon::createFromFormat('d M Y', trim($from))->startOfDay();
+            $end   = Carbon::createFromFormat('d M Y', trim($to))->endOfDay();
+        }
+        elseif (preg_match('/^[A-Z][a-z]+ \d{4}$/', $label)) {
+            $start = Carbon::createFromFormat('F Y', $label)->startOfMonth()->startOfDay();
+            $end   = Carbon::createFromFormat('F Y', $label)->endOfMonth()->endOfDay();
+        }
+        elseif (Str::startsWith($label, 'Tahun ')) {
+            $year  = (int) Str::after($label, 'Tahun ');
+            $start = Carbon::create($year, 1, 1)->startOfDay();
+            $end   = Carbon::create($year, 12, 31)->endOfDay();
+        } else {
+            $start = $laporan->created_at->startOfDay();
+            $end   = $laporan->created_at->endOfDay();
         }
 
-        // Hitung total pemasukan selama periode itu
-        $totalPemasukan = Pemasukan::where('id_pengguna', $userId)
+        // Ambil detail dengan relasi kategori
+        $pemasukans = Pemasukan::with('kategori')
+            ->where('id_pengguna', $laporan->id_pengguna)
             ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
-            ->sum('jumlah');
+            ->orderBy('tanggal')->get();
 
-        // Hitung total pengeluaran selama periode itu
-        $totalPengeluaran = Pengeluaran::where('id_pengguna', $userId)
+        $pengeluarans = Pengeluaran::with('kategori')
+            ->where('id_pengguna', $laporan->id_pengguna)
             ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
-            ->sum('jumlah');
+            ->orderBy('tanggal')->get();
 
-        $saldoAkhir = $totalPemasukan - $totalPengeluaran;
+        // Generate PDF
+        $pdf = Pdf::loadView('laporan.print', [
+            'laporan'      => $laporan,
+            'generated_at' => now()->format('d M Y H:i'),
+            'pemasukans'   => $pemasukans,
+            'pengeluarans' => $pengeluarans,
+        ])->setPaper('a4', 'portrait');
 
-        // Simpan ke tabel laporan, dengan `periode` = label string
-        Laporan::create([
-            'id_pengguna'        => $userId,
-            'total_pemasukan'    => $totalPemasukan,
-            'total_pengeluaran'  => $totalPengeluaran,
-            'saldo_akhir'        => $saldoAkhir,
-            'periode'            => $label,
-        ]);
-
-        return redirect()
-            ->route('laporan.index')
-            ->with('success', 'Laporan berhasil dibuat untuk ' . $label);
+        return $pdf->stream("laporan_{$laporan->id_laporan}.pdf");
     }
 }
