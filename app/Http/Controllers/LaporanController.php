@@ -15,15 +15,17 @@ class LaporanController extends Controller
     /**
      * Tampilkan form + list laporan.
      */
-   public function index()
+public function index()
 {
-    // ambil 10 per halaman, eager-load pengguna
+    // ambil 10 per halaman, hanya laporan milik user yang login, eager-load pengguna
     $items = Laporan::with('pengguna')
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(10);
+                ->where('id_pengguna', auth()->user()->id_pengguna)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
     return view('laporan.index', compact('items'));
 }
+
 
 
     /**
