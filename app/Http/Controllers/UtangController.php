@@ -60,16 +60,19 @@ class UtangController extends Controller
             ]);
 
             // 2) Pastikan kategori "Utang" ada
-            $kategoriUtang = KategoriPemasukan::firstOrCreate(
-                [
-                    'id_pengguna'   => $data['id_pengguna'],
-                    'nama_kategori' => 'Utang',
-                ],
-                [
-                    'deskripsi' => 'Kategori untuk mencatat penerimaan utang',
-                    'icon'      => 'fas fa-hand-holding-usd',
-                ]
-            );
+          $kategoriUtang = KategoriPemasukan::where('id_pengguna', $data['id_pengguna'])
+            ->where('nama_kategori', 'Utang')
+            ->first();
+
+// Jika belum ada, buat baru
+        if (! $kategoriUtang) {
+            $kategoriUtang = KategoriPemasukan::create([
+                'id_pengguna'   => $data['id_pengguna'],
+                'nama_kategori' => 'Utang',
+                'deskripsi'     => 'Kategori untuk mencatat penerimaan utang',
+                'icon'          => 'fas fa-hand-holding-usd',
+            ]);
+        }
 
             // 3) Catat Pemasukan
             Pemasukan::create([
