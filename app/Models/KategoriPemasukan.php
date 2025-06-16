@@ -11,7 +11,6 @@ class KategoriPemasukan extends Model
 
     protected $table = 'kategori_pemasukan';
     protected $primaryKey = 'id_kategori_pemasukan';
-    public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = ['id_pengguna','nama_kategori','deskripsi','icon'];

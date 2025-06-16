@@ -74,6 +74,7 @@ class UtangController extends Controller
             ]);
         }
 
+        dd($kategoriUtang);
             // 3) Catat Pemasukan
             Pemasukan::create([
                 'id_pengguna' => $data['id_pengguna'],
