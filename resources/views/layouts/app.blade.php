@@ -202,7 +202,7 @@
                         <!-- Logo (visible on mobile when sidebar is closed) -->
                         <div class="lg:hidden ml-2 flex-shrink-0 flex items-center">
                             <span class="text-xl font-semibold text-gray-800">
-                                Laravel
+                                Pengaturuangku
                             </span>
                         </div>
                     </div>
