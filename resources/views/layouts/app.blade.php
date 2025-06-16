@@ -36,7 +36,7 @@
             <!-- Sidebar Header -->
             <div class="flex items-center justify-between h-16 px-6 bg-yellow-500 text-white">
                 <h1 class="text-xl font-semibold">
-                    Laravel
+                    Pengaturuangku
                 </h1>
 
                 <!-- Mobile close button -->
