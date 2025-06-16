@@ -11,7 +11,7 @@ class KategoriPengeluaran extends Model
 
     protected $table = 'kategori_pengeluaran';
     protected $primaryKey = 'id_kategori_pengeluaran';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = ['id_pengguna','nama_kategori','deskripsi','icon'];

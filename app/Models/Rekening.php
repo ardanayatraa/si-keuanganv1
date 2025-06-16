@@ -11,7 +11,7 @@ class Rekening extends Model
 
     protected $table = 'rekening';
     protected $primaryKey = 'id_rekening';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = ['id_pengguna','nama_rekening','saldo'];

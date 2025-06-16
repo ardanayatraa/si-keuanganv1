@@ -11,7 +11,7 @@ class Pengeluaran extends Model
 
     protected $table = 'pengeluaran';
     protected $primaryKey = 'id_pengeluaran';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = ['id_pengguna','jumlah','tanggal','id_kategori','deskripsi','id_rekening'];

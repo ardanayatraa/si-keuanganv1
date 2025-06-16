@@ -12,7 +12,6 @@ class Pengguna extends Authenticatable
 
     protected $table = 'pengguna';
     protected $primaryKey = 'id_pengguna';
-    public $incrementing = false;
     protected $keyType = 'string';
 
     /**

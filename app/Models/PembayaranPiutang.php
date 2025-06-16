@@ -11,7 +11,7 @@ class PembayaranPiutang extends Model
 
     protected $table = 'pembayaran_piutang';
     protected $primaryKey = 'id_pembayaran_piutang';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = [

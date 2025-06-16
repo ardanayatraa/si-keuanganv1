@@ -11,7 +11,7 @@ class Laporan extends Model
 
     protected $table = 'laporan';
     protected $primaryKey = 'id_laporan';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = ['id_pengguna','total_pemasukan','total_pengeluaran','saldo_akhir','periode'];

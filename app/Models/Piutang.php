@@ -11,7 +11,6 @@ class Piutang extends Model
 
     protected $table = 'piutang';
     protected $primaryKey = 'id_piutang';
-    public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [

@@ -11,7 +11,7 @@ class Transfer extends Model
 
     protected $table = 'transfer';
     protected $primaryKey = 'id_transfer';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = ['id_rekening','rekening_tujuan','jumlah','tanggal'];

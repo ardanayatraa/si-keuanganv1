@@ -11,7 +11,7 @@ class Anggaran extends Model
 
     protected $table = 'anggaran';
     protected $primaryKey = 'id_anggaran';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = [

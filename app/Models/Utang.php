@@ -11,7 +11,7 @@ class Utang extends Model
 
     protected $table = 'utang';
     protected $primaryKey = 'id_utang';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = [
