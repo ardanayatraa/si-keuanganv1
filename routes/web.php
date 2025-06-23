@@ -21,7 +21,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\CustomAuthenticatedSessionController;
 use App\Http\Controllers\GoogleDriveController;
 use App\Http\Controllers\LaporanBackupController;
-
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/google/auth', function () {
     $client = new \Google_Client();
@@ -58,6 +58,20 @@ Route::get('/', function () {
 });
 
 // Auth Custom (override Fortify)
+Route::get('login', function (Request $request) {
+    // Jika sudah login sebagai admin → dashboard admin
+    if (Auth::guard('admin')->check()) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    // Jika sudah login sebagai user biasa (web) → dashboard user
+    if (Auth::guard('web')->check()) {
+        return redirect()->route('dashboard');
+    }
+
+    // Belum login sama sekali → tampilkan form login
+    return view('auth.login');
+})->name('login');
 Route::post('/login',  [CustomAuthenticatedSessionController::class, 'store'])->name('login');
 Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])->name('logout');
 
@@ -66,13 +80,24 @@ Route::get('/pengguna/create', [PenggunaController::class, 'create'])->name('pen
 Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
 
 
-Route::middleware('auth:admin'  )
-     ->prefix('auth/admin')
-     ->group(function () {
-         Route::get('dashboard', function () {
-             return 'berhasil';
-         })->name('admin.dashboard');
-     })->middleware('redirect.if.admin');
+Route::prefix('auth/admin')
+     ->middleware('auth:admin')
+     ->name('admin.')
+     ->group(function(){
+         // Dashboard
+         Route::get('dashboard', [AdminController::class,'dashboard'])
+              ->name('dashboard');
+         // Resource CRUD untuk Pengguna
+         Route::resource('pengguna', PenggunaController::class)
+              ->names([
+                'index'   => 'pengguna.index',
+                'create'  => 'pengguna.create',
+                'store'   => 'pengguna.store',
+                'edit'    => 'pengguna.edit',
+                'update'  => 'pengguna.update',
+                'destroy' => 'pengguna.destroy',
+              ]);
+     });
 
 
 Route::middleware(['auth'])->group(function () {
@@ -103,6 +128,11 @@ Route::middleware([
         // resource routes untuk pembayaran piutang:
         Route::resource('pembayaran', PembayaranPiutangController::class);
     });
+
+    Route::get('/profile', [PenggunaController::class,'editProfile'])
+         ->name('pengguna.profile.edit');
+    Route::put('/profile', [PenggunaController::class,'updateProfile'])
+         ->name('pengguna.profile.update');
     // Resource routes
     Route::resources([
         'kategori-pemasukan'   => KategoriPemasukanController::class,

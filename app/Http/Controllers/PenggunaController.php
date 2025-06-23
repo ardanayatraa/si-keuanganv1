@@ -40,7 +40,7 @@ class PenggunaController extends Controller
 
         Pengguna::create($data);
 
-        return redirect()->route('pengguna.index')
+        return redirect()->route('admin.pengguna.index')
                          ->with('success','Pengguna berhasil dibuat.');
     }
 
@@ -82,7 +82,7 @@ class PenggunaController extends Controller
 
         $pengguna->update($data);
 
-        return redirect()->route('pengguna.index')
+        return redirect()->route('admin.pengguna.index')
                          ->with('success','Pengguna berhasil diperbarui.');
     }
 
@@ -94,7 +94,53 @@ class PenggunaController extends Controller
         }
         $pengguna->delete();
 
-        return redirect()->route('pengguna.index')
+        return redirect()->route('admin.pengguna.index')
                          ->with('success','Pengguna berhasil dihapus.');
+    }
+
+
+     /**
+     * Form edit profil (data sendiri yang login).
+     * GET /profile
+     */
+    public function editProfile()
+    {
+        $user = auth()->user();
+        return view('pengguna.profile-edit', compact('user'));
+    }
+
+    /**
+     * Proses update profil.
+     * PUT /profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $data = $request->validate([
+            'username' => 'required|string|max:50|unique:pengguna,username,'.$user->id_pengguna.',id_pengguna',
+            'email'    => 'required|email|max:50|unique:pengguna,email,'.$user->id_pengguna.',id_pengguna',
+            'password' => 'nullable|string|min:6',
+            'saldo'    => 'required|numeric',
+            'foto'     => 'nullable|image|max:2048',
+        ]);
+
+        if (!empty($data['password'])) {
+            $data['password'] = bcrypt($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
+        if ($request->hasFile('foto')) {
+            if ($user->foto && Storage::disk('public')->exists($user->foto)) {
+                Storage::disk('public')->delete($user->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('pengguna_foto', 'public');
+        }
+
+        $user->update($data);
+
+        return redirect()->route('pengguna.profile.edit')
+                         ->with('success', 'Profil berhasil diperbarui.');
     }
 }
