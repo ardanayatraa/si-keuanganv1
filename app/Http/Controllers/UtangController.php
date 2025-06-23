@@ -7,25 +7,32 @@ use App\Models\Pemasukan;
 use App\Models\Rekening;
 use App\Models\KategoriPemasukan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UtangController extends Controller
 {
     /**
-     * Tampilkan daftar utang (bersama relasi pengguna & rekening).
+     * Daftar utang milik user login.
      */
     public function index()
     {
-        $items = Utang::with(['pengguna', 'rekening'])->get();
+        $items = Utang::with(['pengguna', 'rekening'])
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->orderBy('tanggal_pinjam', 'desc')
+            ->get();
+
         return view('utang.index', compact('items'));
     }
 
     /**
-     * Tampilkan form untuk menambah utang.
+     * Form tambah utang. Rekening hanya milik user.
      */
     public function create()
     {
-        $rekenings = Rekening::all();
+        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)
+                              ->get();
+
         return view('utang.create', compact('rekenings'));
     }
 
@@ -35,7 +42,6 @@ class UtangController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            // 'id_pengguna' dihapus dari validasi
             'id_rekening'         => 'required|exists:rekening,id_rekening',
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
@@ -43,11 +49,10 @@ class UtangController extends Controller
             'deskripsi'           => 'nullable|string',
         ]);
 
-        // SET id_pengguna otomatis
-        $data['id_pengguna'] = auth()->user()->id_pengguna;
+        $data['id_pengguna'] = Auth::user()->id_pengguna;
 
         DB::transaction(function() use ($data) {
-            // 1) Simpan record Utang
+            // 1) Buat utang
             $utang = Utang::create([
                 'id_pengguna'         => $data['id_pengguna'],
                 'id_rekening'         => $data['id_rekening'],
@@ -59,22 +64,13 @@ class UtangController extends Controller
                 'status'              => 'belum dibayar',
             ]);
 
-            // 2) Pastikan kategori "Utang" ada
-          $kategoriUtang = KategoriPemasukan::where('id_pengguna', $data['id_pengguna'])
-            ->where('nama_kategori', 'Utang')
-            ->first();
+            // 2) Pastikan kategori “Utang” ada untuk user
+            $kategoriUtang = KategoriPemasukan::firstOrCreate(
+                ['id_pengguna' => $data['id_pengguna'], 'nama_kategori' => 'Utang'],
+                ['deskripsi' => 'Kategori mencatat penerimaan utang', 'icon' => 'fas fa-hand-holding-usd']
+            );
 
-// Jika belum ada, buat baru
-        if (! $kategoriUtang) {
-            $kategoriUtang = KategoriPemasukan::create([
-                'id_pengguna'   => $data['id_pengguna'],
-                'nama_kategori' => 'Utang',
-                'deskripsi'     => 'Kategori untuk mencatat penerimaan utang',
-                'icon'          => 'fas fa-hand-holding-usd',
-            ]);
-        }
-
-            // 3) Catat Pemasukan
+            // 3) Catat pemasukan
             Pemasukan::create([
                 'id_pengguna' => $data['id_pengguna'],
                 'jumlah'      => $data['jumlah'],
@@ -94,30 +90,43 @@ class UtangController extends Controller
     }
 
     /**
-     * Tampilkan detail satu utang.
+     * Detail utang (pastikan milik user).
      */
-    public function show(Utang $utang)
+    public function show($id)
     {
-        $utang->load(['pengguna', 'rekening']);
+        $utang = Utang::with(['pengguna','rekening'])
+            ->where('id_utang', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
         return view('utang.show', compact('utang'));
     }
 
     /**
-     * Tampilkan form edit utang.
+     * Form edit utang (pastikan milik user).
      */
-    public function edit(Utang $utang)
+    public function edit($id)
     {
-        $rekenings = Rekening::all();
-        return view('utang.edit', compact('utang', 'rekenings'));
+        $utang = Utang::where('id_utang', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
+        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)
+                              ->get();
+
+        return view('utang.edit', compact('utang','rekenings'));
     }
 
     /**
-     * Perbarui data utang.
+     * Update utang.
      */
-    public function update(Request $request, Utang $utang)
+    public function update(Request $request, $id)
     {
+        $utang = Utang::where('id_utang', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
         $data = $request->validate([
-            // 'id_pengguna' dihapus dari validasi
             'id_rekening'         => 'required|exists:rekening,id_rekening',
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
@@ -125,23 +134,20 @@ class UtangController extends Controller
             'deskripsi'           => 'nullable|string',
         ]);
 
-        // SET id_pengguna otomatis (meski tidak berubah)
-        $data['id_pengguna'] = auth()->user()->id_pengguna;
+        $data['id_pengguna'] = Auth::user()->id_pengguna;
 
         DB::transaction(function() use ($data, $utang) {
-            // 1) Hapus & refund Pemasukan lama
-            \App\Models\Pemasukan::where([
-                ['deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%'],
-                ['tanggal', '=', $utang->tanggal_pinjam],
-                ['jumlah', '=', $utang->jumlah],
-                ['id_rekening', '=', $utang->id_rekening],
-            ])->delete();
+            // refund & hapus pemasukan lama
+            Pemasukan::where('deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%')
+                     ->where('tanggal', $utang->tanggal_pinjam)
+                     ->where('jumlah', $utang->jumlah)
+                     ->where('id_rekening', $utang->id_rekening)
+                     ->delete();
             Rekening::where('id_rekening', $utang->id_rekening)
                    ->decrement('saldo', $utang->jumlah);
 
-            // 2) Update Utang
+            // update utang
             $utang->update([
-                'id_pengguna'         => $data['id_pengguna'],
                 'id_rekening'         => $data['id_rekening'],
                 'jumlah'              => $data['jumlah'],
                 'sisa_utang'          => $data['jumlah'],
@@ -151,19 +157,13 @@ class UtangController extends Controller
                 'status'              => 'belum dibayar',
             ]);
 
-            // 3) Pastikan kategori Utang
+            // pastikan kategori Utang
             $kategoriUtang = KategoriPemasukan::firstOrCreate(
-                [
-                    'id_pengguna'   => $data['id_pengguna'],
-                    'nama_kategori' => 'Utang',
-                ],
-                [
-                    'deskripsi' => 'Kategori untuk mencatat penerimaan utang',
-                    'icon'      => 'fas fa-hand-holding-usd',
-                ]
+                ['id_pengguna' => $data['id_pengguna'], 'nama_kategori' => 'Utang'],
+                ['deskripsi' => 'Kategori mencatat penerimaan utang', 'icon' => 'fas fa-hand-holding-usd']
             );
 
-            // 4) Buat ulang Pemasukan baru
+            // rekam pemasukan baru
             Pemasukan::create([
                 'id_pengguna' => $data['id_pengguna'],
                 'jumlah'      => $data['jumlah'],
@@ -173,7 +173,7 @@ class UtangController extends Controller
                 'id_rekening' => $data['id_rekening'],
             ]);
 
-            // 5) Tambah saldo rekening
+            // update saldo rekening baru
             Rekening::where('id_rekening', $data['id_rekening'])
                    ->increment('saldo', $data['jumlah']);
         });
@@ -183,22 +183,25 @@ class UtangController extends Controller
     }
 
     /**
-     * Hapus satu utang.
+     * Hapus utang (pastikan milik user).
      */
-    public function destroy(Utang $utang)
+    public function destroy($id)
     {
+        $utang = Utang::where('id_utang', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
         DB::transaction(function() use ($utang) {
-            // Hapus Pemasukan terkait & refund saldo
-            \App\Models\Pemasukan::where([
-                ['deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%'],
-                ['tanggal', '=', $utang->tanggal_pinjam],
-                ['jumlah', '=', $utang->jumlah],
-                ['id_rekening', '=', $utang->id_rekening],
-            ])->delete();
+            // hapus pemasukan & refund saldo
+            Pemasukan::where('deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%')
+                     ->where('tanggal', $utang->tanggal_pinjam)
+                     ->where('jumlah', $utang->jumlah)
+                     ->where('id_rekening', $utang->id_rekening)
+                     ->delete();
             Rekening::where('id_rekening', $utang->id_rekening)
                    ->decrement('saldo', $utang->jumlah);
 
-            // Hapus Utang
+            // hapus utang
             $utang->delete();
         });
 

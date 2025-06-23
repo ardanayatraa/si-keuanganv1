@@ -9,7 +9,6 @@
                 @csrf
                 <div class="space-y-4">
 
-
                     {{-- Kategori --}}
                     <div>
                         <label for="id_kategori" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -18,7 +17,7 @@
                         <select id="id_kategori" name="id_kategori"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
                             <option value="">-- Pilih Kategori --</option>
-                            @foreach (\App\Models\KategoriPengeluaran::all() as $kategori)
+                            @foreach ($listKategori as $kategori)
                                 <option value="{{ $kategori->id_kategori_pengeluaran }}"
                                     {{ old('id_kategori') == $kategori->id_kategori_pengeluaran ? 'selected' : '' }}>
                                     {{ $kategori->nama_kategori }}

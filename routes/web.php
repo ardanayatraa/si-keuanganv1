@@ -65,6 +65,16 @@ Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])
 Route::get('/pengguna/create', [PenggunaController::class, 'create'])->name('pengguna.create');
 Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
 
+
+Route::middleware('auth:admin'  )
+     ->prefix('auth/admin')
+     ->group(function () {
+         Route::get('dashboard', function () {
+             return 'berhasil';
+         })->name('admin.dashboard');
+     })->middleware('redirect.if.admin');
+
+
 Route::middleware(['auth'])->group(function () {
     Route::post('/laporan/backup', [LaporanBackupController::class, 'backup'])->name('laporan.backup');
     Route::post('/laporan/restore', [LaporanBackupController::class, 'restore'])->name('laporan.restore');
@@ -85,7 +95,14 @@ Route::middleware([
     Route::get('/pengguna/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
     Route::match(['put', 'patch'], '/pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
     Route::delete('/pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+     Route::prefix('utang')->name('utang.')->group(function () {
+        Route::resource('pembayaran', PembayaranUtangController::class);
+    });
 
+    Route::prefix('piutang')->name('piutang.')->group(function () {
+        // resource routes untuk pembayaran piutang:
+        Route::resource('pembayaran', PembayaranPiutangController::class);
+    });
     // Resource routes
     Route::resources([
         'kategori-pemasukan'   => KategoriPemasukanController::class,
@@ -96,12 +113,12 @@ Route::middleware([
         'rekening'             => RekeningController::class,
         'transfer'             => TransferController::class,
         'utang'                => UtangController::class,
-        'pembayaran-utang'     => PembayaranUtangController::class,
         'piutang'              => PiutangController::class,
-        'pembayaran-piutang'   => PembayaranPiutangController::class,
         'laporan'              => LaporanController::class,
         'admin'                => AdminController::class,
     ]);
+
+
 
     Route::post('/laporan/generate', [LaporanController::class, 'generate'])->name('laporan.generate');
  Route::get('/print/{laporan}', [LaporanController::class, 'print'])->name('laporan.print');

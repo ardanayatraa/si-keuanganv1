@@ -43,4 +43,8 @@ class Utang extends Model
     {
         return $this->hasMany(PembayaranUtang::class, 'id_utang');
     }
+    public function pembayaran()
+    {
+        return $this->hasMany(PembayaranUtang::class, 'id_utang');
+    }
 }

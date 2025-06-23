@@ -3,25 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Models\Anggaran;
-use App\Models\Pengguna;
 use App\Models\KategoriPengeluaran;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AnggaranController extends Controller
 {
+    /**
+     * Tampilkan daftar anggaran milik user login.
+     */
     public function index()
     {
-        $items = Anggaran::with('kategori', 'pengguna')->get();
+        $items = Anggaran::with('kategori')
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->orderBy('periode_awal', 'desc') // optional: urut per periode
+            ->get();
+
         return view('anggaran.index', compact('items'));
     }
 
+    /**
+     * Form tambah anggaran.
+     */
     public function create()
     {
-        // Form hanya butuh daftar kategori, pengguna diisi otomatis
-        $listKategori = KategoriPengeluaran::all();
+        $listKategori = KategoriPengeluaran::where('id_pengguna', Auth::user()->id_pengguna)
+            ->get();
         return view('anggaran.create', compact('listKategori'));
     }
 
+    /**
+     * Simpan data anggaran baru untuk user login.
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -32,8 +45,8 @@ class AnggaranController extends Controller
             'periode_akhir'  => 'required|date|after_or_equal:periode_awal',
         ]);
 
-        // isi id_pengguna otomatis
-        $data['id_pengguna'] = auth()->user()->id_pengguna;
+        // assign id_pengguna otomatis
+        $data['id_pengguna'] = Auth::user()->id_pengguna;
 
         Anggaran::create($data);
 
@@ -42,20 +55,42 @@ class AnggaranController extends Controller
             ->with('success', 'Anggaran berhasil dibuat.');
     }
 
-    public function show(Anggaran $anggaran)
+    /**
+     * Tampilkan detail anggaran (pastikan milik user).
+     */
+    public function show($id)
     {
+        $anggaran = Anggaran::with('kategori')
+            ->where('id_anggaran', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
         return view('anggaran.show', compact('anggaran'));
     }
 
-    public function edit(Anggaran $anggaran)
+    /**
+     * Form edit anggaran (pastikan milik user).
+     */
+    public function edit($id)
     {
-        // Form edit hanya butuh kategori, pengguna tak diubah
-        $listKategori = KategoriPengeluaran::all();
+        $anggaran = Anggaran::where('id_anggaran', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
+        $listKategori = KategoriPengeluaran::where('id_pengguna', Auth::user()->id_pengguna)
+            ->get();
         return view('anggaran.edit', compact('anggaran', 'listKategori'));
     }
 
-    public function update(Request $request, Anggaran $anggaran)
+    /**
+     * Update anggaran (pastikan milik user).
+     */
+    public function update(Request $request, $id)
     {
+        $anggaran = Anggaran::where('id_anggaran', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
         $data = $request->validate([
             'id_kategori'    => 'required|exists:kategori_pengeluaran,id_kategori_pengeluaran',
             'deskripsi'      => 'nullable|string',
@@ -64,7 +99,6 @@ class AnggaranController extends Controller
             'periode_akhir'  => 'required|date|after_or_equal:periode_awal',
         ]);
 
-        // tidak mengubah id_pengguna
         $anggaran->update($data);
 
         return redirect()
@@ -72,9 +106,17 @@ class AnggaranController extends Controller
             ->with('success', 'Anggaran berhasil diperbarui.');
     }
 
-    public function destroy(Anggaran $anggaran)
+    /**
+     * Hapus anggaran (pastikan milik user).
+     */
+    public function destroy($id)
     {
+        $anggaran = Anggaran::where('id_anggaran', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
         $anggaran->delete();
+
         return redirect()
             ->route('anggaran.index')
             ->with('success', 'Anggaran berhasil dihapus.');

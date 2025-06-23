@@ -6,31 +6,46 @@ use App\Models\PembayaranPiutang;
 use App\Models\Piutang;
 use App\Models\Pemasukan;
 use App\Models\Rekening;
+use App\Models\KategoriPemasukan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PembayaranPiutangController extends Controller
 {
+    /**
+     * Tampilkan daftar pembayaran piutang milik user login.
+     */
     public function index()
     {
-        $items = PembayaranPiutang::with([
-            'piutang.pengguna',
-            'pemasukan.rekening'
-        ])->get();
+        $items = PembayaranPiutang::with(['piutang.pengguna', 'pemasukan.rekening'])
+            ->whereHas('piutang', fn($q) =>
+                $q->where('id_pengguna', Auth::id())
+            )
+            ->orderBy('tanggal_pembayaran', 'desc')
+            ->get();
 
-        return view('pembayaran-piutang.index', compact('items'));
+        return view('piutang.pembayaran.index', compact('items'));
     }
 
+    /**
+     * Form tambah pembayaran piutang.
+     */
     public function create()
     {
-        // Ambil daftar piutang yang belum lunas dan daftar rekening
-        $piutangs = Piutang::where('status', 'belum lunas')
+        $piutangs = Piutang::where('id_pengguna', Auth::id())
+                          ->where('status', 'belum lunas')
                           ->with('pengguna')
                           ->get();
-        $rekenings = Rekening::all();
-        return view('pembayaran-piutang.create', compact('piutangs', 'rekenings'));
+
+        $rekenings = Rekening::where('id_pengguna', Auth::id())->get();
+
+        return view('piutang.pembayaran.create', compact('piutangs', 'rekenings'));
     }
 
+    /**
+     * Simpan pembayaran piutang baru.
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -43,67 +58,117 @@ class PembayaranPiutangController extends Controller
         ]);
 
         DB::transaction(function() use ($data) {
-            // 1) Ambil entitas Piutang
-            $piutang = Piutang::findOrFail($data['id_piutang']);
+            $piutang = Piutang::where('id_piutang', $data['id_piutang'])
+                              ->where('id_pengguna', Auth::id())
+                              ->firstOrFail();
 
-            // 2) Masukkan Pemasukan: mencatat uang masuk dari pelunasan piutang
+            // Pastikan kategori "Pelunasan Piutang" ada
+            $kat = KategoriPemasukan::firstOrCreate(
+                [
+                    'id_pengguna'   => $piutang->id_pengguna,
+                    'nama_kategori' => 'Pelunasan Piutang',
+                ],
+                [
+                    'deskripsi' => 'Pencatatan pelunasan piutang',
+                    'icon'      => 'fas fa-handshake',
+                ]
+            );
+
+            // Buat pemasukan
             $pemasukan = Pemasukan::create([
-                'id_pengguna'  => $piutang->id_pengguna,
-                'jumlah'       => $data['jumlah_dibayar'],
-                'tanggal'      => $data['tanggal_pembayaran'],
-                'id_kategori'  => null, // atau kategori khusus “Pelunasan Piutang”
-                'deskripsi'    => 'Pelunasan Piutang ID ' . $piutang->id_piutang,
-                'id_rekening'  => $data['id_rekening'],
+                'id_pengguna' => $piutang->id_pengguna,
+                'jumlah'      => $data['jumlah_dibayar'],
+                'tanggal'     => $data['tanggal_pembayaran'],
+                'id_kategori' => $kat->id_kategori_pemasukan,
+                'deskripsi'   => 'Pelunasan Piutang ID ' . $piutang->id_piutang,
+                'id_rekening' => $data['id_rekening'],
             ]);
 
-            // 3) Tambah saldo rekening
-            Rekening::where('id_rekening', $data['id_rekening'])
+            // Tambah saldo rekening
+            Rekening::find($data['id_rekening'])
                    ->increment('saldo', $data['jumlah_dibayar']);
 
-            // 4) Update sisa_piutang dan status
+            // Kurangi sisa piutang
             $piutang->sisa_piutang -= $data['jumlah_dibayar'];
             if ($piutang->sisa_piutang <= 0) {
                 $piutang->sisa_piutang = 0;
-                $piutang->status = 'lunas';
+                $piutang->status       = 'lunas';
             }
             $piutang->save();
 
-            // 5) Simpan record PembayaranPiutang
+            // Simpan pembayaran piutang
             PembayaranPiutang::create([
-                'id_piutang'        => $data['id_piutang'],
-                'id_pemasukan'      => $pemasukan->id_pemasukan,
-                'id_rekening'       => $data['id_rekening'],
-                'jumlah_dibayar'    => $data['jumlah_dibayar'],
-                'tanggal_pembayaran'=> $data['tanggal_pembayaran'],
-                'metode_pembayaran' => $data['metode_pembayaran'] ?? null,
-                'deskripsi'         => $data['deskripsi'] ?? null,
+                'id_piutang'         => $piutang->id_piutang,
+                'id_pemasukan'       => $pemasukan->id_pemasukan,
+                'id_rekening'        => $data['id_rekening'],
+                'jumlah_dibayar'     => $data['jumlah_dibayar'],
+                'tanggal_pembayaran' => $data['tanggal_pembayaran'],
+                'metode_pembayaran'  => $data['metode_pembayaran'] ?? null,
+                'deskripsi'          => $data['deskripsi'] ?? null,
             ]);
+
+            // Jika sudah lunas, hapus record piutang agar tak muncul lagi
+            if ($piutang->status === 'lunas') {
+                $piutang->delete();
+            }
         });
 
         return redirect()
-            ->route('pembayaran-piutang.index')
+            ->route('piutang.pembayaran.index')
             ->with('success', 'Pembayaran piutang berhasil dibuat.');
     }
 
-    public function show(PembayaranPiutang $pembayaranPiutang)
+    /**
+     * Tampilkan detail pembayaran (pastikan milik user).
+     */
+    public function show($id)
     {
-        $pembayaranPiutang->load(['piutang.pengguna', 'pemasukan.rekening']);
-        return view('pembayaran-piutang.show', compact('pembayaranPiutang'));
+        $p = PembayaranPiutang::with(['piutang.pengguna', 'pemasukan.rekening'])
+            ->where('id_pembayaran_piutang', $id)
+            ->whereHas('piutang', fn($q) =>
+                $q->where('id_pengguna', Auth::id())
+            )
+            ->firstOrFail();
+
+        return view('piutang.pembayaran.show', ['pembayaran' => $p]);
     }
 
-    public function edit(PembayaranPiutang $pembayaranPiutang)
+    /**
+     * Form edit pembayaran (pastikan milik user).
+     */
+    public function edit($id)
     {
-        $pembayaranPiutang->load(['piutang', 'pemasukan.rekening']);
-        $piutangs = Piutang::where('status', 'belum lunas')
-                          ->orWhere('id_piutang', $pembayaranPiutang->id_piutang)
+        $p = PembayaranPiutang::with(['piutang', 'pemasukan.rekening'])
+            ->where('id_pembayaran_piutang', $id)
+            ->whereHas('piutang', fn($q) =>
+                $q->where('id_pengguna', Auth::id())
+            )
+            ->firstOrFail();
+
+        $piutangs = Piutang::where('id_pengguna', Auth::id())
+                          ->where(fn($q) =>
+                              $q->where('status', 'belum lunas')
+                                ->orWhere('id_piutang', $p->id_piutang)
+                          )
                           ->with('pengguna')
                           ->get();
-        $rekenings = Rekening::all();
-        return view('pembayaran-piutang.edit', compact('pembayaranPiutang', 'piutangs', 'rekenings'));
+
+        $rekenings = Rekening::where('id_pengguna', Auth::id())->get();
+
+        return view('piutang.pembayaran.edit', compact('p', 'piutangs', 'rekenings'));
     }
 
-    public function update(Request $request, PembayaranPiutang $pembayaranPiutang)
+    /**
+     * Update pembayaran piutang.
+     */
+    public function update(Request $request, $id)
     {
+        $p = PembayaranPiutang::where('id_pembayaran_piutang', $id)
+            ->whereHas('piutang', fn($q) =>
+                $q->where('id_pengguna', Auth::id())
+            )
+            ->firstOrFail();
+
         $data = $request->validate([
             'id_piutang'         => 'required|exists:piutang,id_piutang',
             'id_rekening'        => 'required|exists:rekening,id_rekening',
@@ -113,95 +178,94 @@ class PembayaranPiutangController extends Controller
             'deskripsi'          => 'nullable|string',
         ]);
 
-        DB::transaction(function() use ($data, $pembayaranPiutang) {
-            // 1) Revert efek pembayaran lama
-            $oldPiutang    = $pembayaranPiutang->piutang;
-            $oldPemasukan  = $pembayaranPiutang->pemasukan;
-            $oldRekeningId = $oldPemasukan->id_rekening;
-            $oldJumlah     = $pembayaranPiutang->jumlah_dibayar;
+        DB::transaction(function() use ($data, $p) {
+            // rollback saldo & sisa_piutang lama
+            $oldMasuk = $p->pemasukan;
+            Rekening::find($oldMasuk->id_rekening)
+                   ->decrement('saldo', $oldMasuk->jumlah);
+            $piutangOld = $p->piutang;
+            $piutangOld->sisa_piutang += $p->jumlah_dibayar;
+            $piutangOld->status = $piutangOld->sisa_piutang > 0 ? 'belum lunas' : 'lunas';
+            $piutangOld->save();
+            $oldMasuk->delete();
 
-            // a) Kurangi saldo rekening lama (membalikkan pemasukan lama)
-            Rekening::where('id_rekening', $oldRekeningId)
-                   ->decrement('saldo', $oldJumlah);
+            // kategori
+            $kat = KategoriPemasukan::firstOrCreate(
+                ['id_pengguna'=>Auth::id(),'nama_kategori'=>'Pelunasan Piutang'],
+                ['deskripsi'=>'Pencatatan pelunasan piutang','icon'=>'fas fa-handshake']
+            );
 
-            // b) Tambah kembali sisa_piutang
-            $oldPiutang->sisa_piutang += $oldJumlah;
-            if ($oldPiutang->sisa_piutang > 0) {
-                $oldPiutang->status = 'belum lunas';
-            }
-            $oldPiutang->save();
-
-            // c) Hapus Pemasukan lama
-            $oldPemasukan->delete();
-
-            // 2) Proses pembayaran baru
-            $newPiutang = Piutang::findOrFail($data['id_piutang']);
-            // Buat entri Pemasukan baru
-            $newPemasukan = Pemasukan::create([
-                'id_pengguna'  => $newPiutang->id_pengguna,
-                'jumlah'       => $data['jumlah_dibayar'],
-                'tanggal'      => $data['tanggal_pembayaran'],
-                'id_kategori'  => null,
-                'deskripsi'    => 'Pelunasan Piutang ID ' . $newPiutang->id_piutang,
-                'id_rekening'  => $data['id_rekening'],
+            // buat pemasukan baru
+            $newMasuk = Pemasukan::create([
+                'id_pengguna' => $piutangOld->id_pengguna,
+                'jumlah'      => $data['jumlah_dibayar'],
+                'tanggal'     => $data['tanggal_pembayaran'],
+                'id_kategori' => $kat->id_kategori_pemasukan,
+                'deskripsi'   => 'Pelunasan Piutang ID ' . $piutangOld->id_piutang,
+                'id_rekening' => $data['id_rekening'],
             ]);
-            // Tambah saldo rekening baru
-            Rekening::where('id_rekening', $data['id_rekening'])
+
+            Rekening::find($data['id_rekening'])
                    ->increment('saldo', $data['jumlah_dibayar']);
 
-            // Update sisa_piutang dan status pada piutang baru
-            $newPiutang->sisa_piutang -= $data['jumlah_dibayar'];
-            if ($newPiutang->sisa_piutang <= 0) {
-                $newPiutang->sisa_piutang = 0;
-                $newPiutang->status = 'lunas';
+            // kurangi sisa_piutang baru
+            $piutangNew = $piutangOld->fresh();
+            $piutangNew->sisa_piutang -= $data['jumlah_dibayar'];
+            if ($piutangNew->sisa_piutang <= 0) {
+                $piutangNew->sisa_piutang = 0;
+                $piutangNew->status       = 'lunas';
             }
-            $newPiutang->save();
+            $piutangNew->save();
 
-            // 3) Update record PembayaranPiutang
-            $pembayaranPiutang->update([
-                'id_piutang'        => $data['id_piutang'],
-                'id_pemasukan'      => $newPemasukan->id_pemasukan,
-                'id_rekening'       => $data['id_rekening'],
-                'jumlah_dibayar'    => $data['jumlah_dibayar'],
-                'tanggal_pembayaran'=> $data['tanggal_pembayaran'],
-                'metode_pembayaran' => $data['metode_pembayaran'] ?? null,
-                'deskripsi'         => $data['deskripsi'] ?? null,
+            // update payment record
+            $p->update([
+                'id_piutang'         => $piutangNew->id_piutang,
+                'id_pemasukan'       => $newMasuk->id_pemasukan,
+                'id_rekening'        => $data['id_rekening'],
+                'jumlah_dibayar'     => $data['jumlah_dibayar'],
+                'tanggal_pembayaran' => $data['tanggal_pembayaran'],
+                'metode_pembayaran'  => $data['metode_pembayaran'] ?? null,
+                'deskripsi'          => $data['deskripsi'] ?? null,
             ]);
+
+            // jika lunas, hapus piutang
+            if ($piutangNew->status === 'lunas') {
+                $piutangNew->delete();
+            }
         });
 
         return redirect()
-            ->route('pembayaran-piutang.index')
+            ->route('piutang.pembayaran.index')
             ->with('success', 'Pembayaran piutang berhasil diperbarui.');
     }
 
-    public function destroy(PembayaranPiutang $pembayaranPiutang)
+    /**
+     * Hapus pembayaran piutang.
+     */
+    public function destroy($id)
     {
-        DB::transaction(function() use ($pembayaranPiutang) {
-            $piutang    = $pembayaranPiutang->piutang;
-            $pemasukan  = $pembayaranPiutang->pemasukan;
-            $rekeningId = $pemasukan->id_rekening;
-            $jumlah     = $pembayaranPiutang->jumlah_dibayar;
+        $p = PembayaranPiutang::where('id_pembayaran_piutang', $id)
+            ->whereHas('piutang', fn($q) =>
+                $q->where('id_pengguna', Auth::id())
+            )
+            ->firstOrFail();
 
-            // 1) Kurangi saldo rekening (revert pemasukan)
-            Rekening::where('id_rekening', $rekeningId)
-                   ->decrement('saldo', $jumlah);
+        DB::transaction(function() use ($p) {
+            $masuk  = $p->pemasukan;
+            Rekening::find($masuk->id_rekening)
+                   ->decrement('saldo', $masuk->jumlah);
 
-            // 2) Tambah kembali sisa_piutang
-            $piutang->sisa_piutang += $jumlah;
-            if ($piutang->sisa_piutang > 0) {
-                $piutang->status = 'belum lunas';
-            }
+            $piutang = $p->piutang;
+            $piutang->sisa_piutang += $p->jumlah_dibayar;
+            $piutang->status = $piutang->sisa_piutang > 0 ? 'belum lunas' : 'lunas';
             $piutang->save();
 
-            // 3) Hapus record Pemasukan
-            $pemasukan->delete();
-
-            // 4) Hapus record PembayaranPiutang
-            $pembayaranPiutang->delete();
+            $masuk->delete();
+            $p->delete();
         });
 
         return redirect()
-            ->route('pembayaran-piutang.index')
-            ->with('success', 'Pembayaran piutang berhasil dihapus dan mutasi rekening dikembalikan.');
+            ->route('piutang.pembayaran.index')
+            ->with('success', 'Pembayaran piutang berhasil dihapus.');
     }
 }

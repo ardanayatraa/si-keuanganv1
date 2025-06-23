@@ -38,7 +38,7 @@
                         <select id="id_kategori" name="id_kategori"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
                             <option value="">-- Pilih Kategori --</option>
-                            @foreach (\App\Models\KategoriPengeluaran::all() as $cat)
+                            @foreach (\App\Models\KategoriPengeluaran::where('id_pengguna', auth()->user()->id_pengguna)->get() as $cat)
                                 <option value="{{ $cat->id_kategori_pengeluaran }}"
                                     {{ old('id_kategori') == $cat->id_kategori_pengeluaran ? 'selected' : '' }}>
                                     {{ $cat->nama_kategori }}

@@ -5,28 +5,39 @@ namespace App\Http\Controllers;
 use App\Models\Pemasukan;
 use App\Models\Rekening;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PemasukanController extends Controller
 {
+    /**
+     * Tampilkan daftar pemasukan milik user login.
+     */
     public function index()
     {
-        // eager load relasi kategori, pengguna, rekening
-        $items = Pemasukan::with('kategori', 'pengguna', 'rekening')->get();
+        $items = Pemasukan::with('kategori', 'rekening')
+                    ->where('id_pengguna', Auth::user()->id_pengguna)
+                    ->orderBy('tanggal', 'desc')
+                    ->get();
+
         return view('pemasukan.index', compact('items'));
     }
 
+    /**
+     * Form tambah pemasukan. Rekening hanya milik user.
+     */
     public function create()
     {
-        // ambil semua rekening untuk dropdown
-        $rekenings = Rekening::all();
+        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
         return view('pemasukan.create', compact('rekenings'));
     }
 
+    /**
+     * Simpan pemasukan baru untuk user login.
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
-            // hapus id_pengguna dari validasi
             'id_rekening' => 'required|string|exists:rekening,id_rekening',
             'jumlah'      => 'required|numeric|min:0.01',
             'tanggal'     => 'required|date',
@@ -34,8 +45,7 @@ class PemasukanController extends Controller
             'deskripsi'   => 'nullable|string',
         ]);
 
-        // SET id_pengguna otomatis dari yang login
-        $data['id_pengguna'] = auth()->user()->id_pengguna;
+        $data['id_pengguna'] = Auth::user()->id_pengguna;
 
         DB::transaction(function() use ($data) {
             // 1) Buat record pemasukan
@@ -50,19 +60,39 @@ class PemasukanController extends Controller
                          ->with('success', 'Pemasukan berhasil dibuat.');
     }
 
-    public function show(Pemasukan $pemasukan)
+    /**
+     * Detail pemasukan (pastikan milik user).
+     */
+    public function show($id)
     {
+        $pemasukan = Pemasukan::with('kategori', 'rekening')
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->findOrFail($id);
+
         return view('pemasukan.show', compact('pemasukan'));
     }
 
-    public function edit(Pemasukan $pemasukan)
+    /**
+     * Form edit pemasukan (pastikan milik user).
+     */
+    public function edit($id)
     {
-        $rekenings = Rekening::all();
+        $pemasukan = Pemasukan::where('id_pengguna', Auth::user()->id_pengguna)
+            ->findOrFail($id);
+
+        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
+
         return view('pemasukan.edit', compact('pemasukan', 'rekenings'));
     }
 
-    public function update(Request $request, Pemasukan $pemasukan)
+    /**
+     * Update pemasukan (pastikan milik user).
+     */
+    public function update(Request $request, $id)
     {
+        $pemasukan = Pemasukan::where('id_pengguna', Auth::user()->id_pengguna)
+            ->findOrFail($id);
+
         $data = $request->validate([
             'id_rekening' => 'required|string|exists:rekening,id_rekening',
             'jumlah'      => 'required|numeric|min:0.01',
@@ -72,14 +102,14 @@ class PemasukanController extends Controller
         ]);
 
         DB::transaction(function() use ($data, $pemasukan) {
-            // 1) Rollback saldo lama
+            // rollback saldo lama
             Rekening::where('id_rekening', $pemasukan->id_rekening)
                    ->decrement('saldo', $pemasukan->jumlah);
 
-            // 2) Update record pemasukan
+            // update record
             $pemasukan->update($data);
 
-            // 3) Tambah saldo baru
+            // tambah saldo baru
             Rekening::where('id_rekening', $data['id_rekening'])
                    ->increment('saldo', $data['jumlah']);
         });
@@ -88,14 +118,19 @@ class PemasukanController extends Controller
                          ->with('success', 'Pemasukan berhasil diperbarui.');
     }
 
-    public function destroy(Pemasukan $pemasukan)
+    /**
+     * Hapus pemasukan (pastikan milik user).
+     */
+    public function destroy($id)
     {
+        $pemasukan = Pemasukan::where('id_pengguna', Auth::user()->id_pengguna)
+            ->findOrFail($id);
+
         DB::transaction(function() use ($pemasukan) {
-            // 1) Kurangi saldo sesuai jumlah yang dihapus
+            // kurangi saldo
             Rekening::where('id_rekening', $pemasukan->id_rekening)
                    ->decrement('saldo', $pemasukan->jumlah);
 
-            // 2) Hapus record pemasukan
             $pemasukan->delete();
         });
 

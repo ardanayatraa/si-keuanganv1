@@ -21,9 +21,6 @@
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                            Pengguna
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Kategori
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
@@ -47,9 +44,6 @@
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($items as $item)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
-                                {{ $item->pengguna->username }}
-                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
                                 {{ $item->kategori->nama_kategori }}
                             </td>
@@ -84,7 +78,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                 Belum ada data anggaran.
                             </td>
                         </tr>

@@ -5,10 +5,16 @@
         </h1>
 
         <div class="flex justify-between items-center mb-4">
-            <a href="{{ route('utang.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
-                Tambah Utang
-            </a>
+            <div class="space-x-2">
+                <a href="{{ route('utang.create') }}"
+                    class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
+                    Tambah Utang
+                </a>
+                <a href="{{ route('utang.pembayaran.index') }}"
+                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700">
+                    Pembayaran Utang
+                </a>
+            </div>
             @if (session('success'))
                 <div class="px-4 py-2 bg-green-100 border border-green-400 text-green-700 rounded-md">
                     {{ session('success') }}

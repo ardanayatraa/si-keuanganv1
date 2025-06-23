@@ -111,23 +111,30 @@ public function index()
     {
         // Parse periode → start/end
         $label = $laporan->periode;
-        if (Str::startsWith($label, 'Minggu ')) {
-            [$from, $to] = explode(' – ', Str::after($label, 'Minggu '));
-            $start = Carbon::createFromFormat('d M Y', trim($from))->startOfDay();
-            $end   = Carbon::createFromFormat('d M Y', trim($to))->endOfDay();
-        }
-        elseif (preg_match('/^[A-Z][a-z]+ \d{4}$/', $label)) {
-            $start = Carbon::createFromFormat('F Y', $label)->startOfMonth()->startOfDay();
-            $end   = Carbon::createFromFormat('F Y', $label)->endOfMonth()->endOfDay();
-        }
-        elseif (Str::startsWith($label, 'Tahun ')) {
-            $year  = (int) Str::after($label, 'Tahun ');
-            $start = Carbon::create($year, 1, 1)->startOfDay();
-            $end   = Carbon::create($year, 12, 31)->endOfDay();
-        } else {
-            $start = $laporan->created_at->startOfDay();
-            $end   = $laporan->created_at->endOfDay();
-        }
+
+    // 1) Mingguan
+    if (Str::startsWith($label, 'Minggu ')) {
+        [$from, $to] = explode(' – ', Str::after($label, 'Minggu '));
+        $start = Carbon::createFromFormat('d M Y', trim($from))->startOfDay();
+        $end   = Carbon::createFromFormat('d M Y', trim($to))->endOfDay();
+    }
+    // 2) Tahunan (sekarang diprioritaskan sebelum "bulan")
+    elseif (Str::startsWith($label, 'Tahun ')) {
+        $year  = (int) Str::after($label, 'Tahun ');
+        $start = Carbon::create($year, 1, 1)->startOfDay();
+        $end   = Carbon::create($year, 12, 31)->endOfDay();
+    }
+    // 3) Bulanan
+    elseif (preg_match('/^[A-Z][a-z]+ \d{4}$/', $label)) {
+        // ini hanya akan menang untuk "June 2025", "July 2025", dst.
+        $start = Carbon::createFromFormat('F Y', $label)->startOfMonth()->startOfDay();
+        $end   = Carbon::createFromFormat('F Y', $label)->endOfMonth()->endOfDay();
+    }
+    // 4) Fallback: periode satu hari
+    else {
+        $start = $laporan->created_at->startOfDay();
+        $end   = $laporan->created_at->endOfDay();
+    }
 
         // Ambil detail dengan relasi kategori
         $pemasukans = Pemasukan::with('kategori')

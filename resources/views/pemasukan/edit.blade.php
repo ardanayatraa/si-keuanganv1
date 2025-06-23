@@ -16,7 +16,7 @@
                         </label>
                         <select id="id_pengguna" name="id_pengguna"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
-                            @foreach (\App\Models\Pengguna::all() as $u)
+                            @foreach (\App\Models\Pengguna::where('id_pengguna', auth()->user()->id_pengguna) as $u)
                                 <option value="{{ $u->id_pengguna }}"
                                     {{ old('id_pengguna', $pemasukan->id_pengguna) == $u->id_pengguna ? 'selected' : '' }}>
                                     {{ $u->username }}
@@ -54,7 +54,7 @@
                         </label>
                         <select id="id_kategori" name="id_kategori"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
-                            @foreach (\App\Models\KategoriPemasukan::all() as $cat)
+                            @foreach (\App\Models\KategoriPemasukan::where('id_pengguna', auth()->user()->id_pengguna)->get() as $cat)
                                 <option value="{{ $cat->id_kategori_pemasukan }}"
                                     {{ old('id_kategori', $pemasukan->id_kategori) == $cat->id_kategori_pemasukan ? 'selected' : '' }}>
                                     {{ $cat->nama_kategori }}

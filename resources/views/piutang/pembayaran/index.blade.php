@@ -5,7 +5,7 @@
         </h1>
 
         <div class="flex justify-between items-center mb-4">
-            <a href="{{ route('pembayaran-piutang.create') }}"
+            <a href="{{ route('piutang.pembayaran.create') }}"
                 class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700">
                 Tambah Pembayaran Piutang
             </a>
@@ -66,11 +66,11 @@
                                 {{ $item->deskripsi ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <a href="{{ route('pembayaran-piutang.edit', $item->id_pembayaran_piutang) }}"
+                                <a href="{{ route('piutang.pembayaran.edit', $item->id_pembayaran_piutang) }}"
                                     class="inline-block px-3 py-1 mr-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 text-sm">
                                     Edit
                                 </a>
-                                <form action="{{ route('pembayaran-piutang.destroy', $item->id_pembayaran_piutang) }}"
+                                <form action="{{ route('piutang.pembayaran.destroy', $item->id_pembayaran_piutang) }}"
                                     method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')

@@ -218,12 +218,13 @@
                                 <!-- User Avatar -->
                                 <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center">
                                     <span class="text-white text-sm font-medium">
-                                        {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
+                                        {{ substr(Auth::guard('web')->user()->username ?? 'A', 0, 1) }}
                                     </span>
                                 </div>
 
                                 <!-- User Name -->
-                                <span class="text-sm font-medium">{{ Auth::user()->name ?? 'Ardana' }}</span>
+                                <span
+                                    class="text-sm font-medium">{{ Auth::guard('web')->user()->username ?? 'a' }}</span>
 
                                 <!-- Dropdown Arrow -->
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

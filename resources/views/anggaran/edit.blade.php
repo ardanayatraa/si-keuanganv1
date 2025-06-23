@@ -10,6 +10,26 @@
                 @method('PUT')
 
                 <div class="space-y-4">
+                    {{-- Kategori --}}
+                    <div>
+                        <label for="id_kategori" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Kategori
+                        </label>
+                        <select id="id_kategori" name="id_kategori"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
+                            <option value="">-- Pilih Kategori --</option>
+                            @foreach ($listKategori as $kategori)
+                                <option value="{{ $kategori->id_kategori_pengeluaran }}"
+                                    {{ old('id_kategori', $anggaran->id_kategori) == $kategori->id_kategori_pengeluaran ? 'selected' : '' }}>
+                                    {{ $kategori->nama_kategori }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('id_kategori')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     {{-- Deskripsi --}}
                     <div>
                         <label for="deskripsi" class="block text-sm font-medium text-gray-700 dark:text-gray-300">

@@ -21,15 +21,16 @@ class CustomAuthenticatedSessionController extends FortifyController
             if ($user && Hash::check($request->password, $user->password)) {
                 auth()->guard('web')->login($user);
                 session(['role' => 'pengguna']);
-                return redirect()->intended('/dashboard');
+                return redirect()->to('/dashboard');
             }
 
             // 2) Coba login Admin
             $admin = Admin::where('email', $request->email)->first();
+
             if ($admin && Hash::check($request->password, $admin->password)) {
                 auth()->guard('admin')->login($admin);
                 session(['role' => 'admin']);
-                return redirect()->intended('/admin');
+                return redirect()->intended('/auth/admin/dashboard');
             }
 
             throw new \Exception('Kredensial salah');

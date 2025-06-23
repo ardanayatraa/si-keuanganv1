@@ -4,20 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\Rekening;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class RekeningController extends Controller
 {
+    /**
+     * Tampilkan daftar rekening milik user login.
+     */
     public function index()
     {
-        $items = Rekening::with('pengguna')->get();
+        $items = Rekening::where('id_pengguna', Auth::user()->id_pengguna)
+                         ->get();
+
         return view('rekening.index', compact('items'));
     }
 
+    /**
+     * Form tambah rekening.
+     */
     public function create()
     {
         return view('rekening.create');
     }
 
+    /**
+     * Simpan rekening baru untuk user login.
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -25,27 +38,46 @@ class RekeningController extends Controller
             'saldo'         => 'required|numeric',
         ]);
 
-        // ambil id_pengguna dari yang login
-        $data['id_pengguna'] = auth()->user()->id_pengguna;
-
+        $data['id_pengguna'] = Auth::user()->id_pengguna;
         Rekening::create($data);
 
         return redirect()->route('rekening.index')
-                         ->with('success','Rekening berhasil dibuat.');
+                         ->with('success', 'Rekening berhasil dibuat.');
     }
 
-    public function show(Rekening $rekening)
+    /**
+     * Tampilkan detail rekening (pastikan milik user).
+     */
+    public function show($id)
     {
+        $rekening = Rekening::where('id_rekening', $id)
+                            ->where('id_pengguna', Auth::user()->id_pengguna)
+                            ->firstOrFail();
+
         return view('rekening.show', compact('rekening'));
     }
 
-    public function edit(Rekening $rekening)
+    /**
+     * Form edit rekening (pastikan milik user).
+     */
+    public function edit($id)
     {
+        $rekening = Rekening::where('id_rekening', $id)
+                            ->where('id_pengguna', Auth::user()->id_pengguna)
+                            ->firstOrFail();
+
         return view('rekening.edit', compact('rekening'));
     }
 
-    public function update(Request $request, Rekening $rekening)
+    /**
+     * Update rekening (pastikan milik user).
+     */
+    public function update(Request $request, $id)
     {
+        $rekening = Rekening::where('id_rekening', $id)
+                            ->where('id_pengguna', Auth::user()->id_pengguna)
+                            ->firstOrFail();
+
         $data = $request->validate([
             'nama_rekening' => 'required|string|max:50',
             'saldo'         => 'required|numeric',
@@ -54,14 +86,44 @@ class RekeningController extends Controller
         $rekening->update($data);
 
         return redirect()->route('rekening.index')
-                         ->with('success','Rekening berhasil diperbarui.');
+                         ->with('success', 'Rekening berhasil diperbarui.');
     }
 
-    public function destroy(Rekening $rekening)
+    /**
+     * Hapus rekening & semua data yang berelasi (tanpa ubah migrasi).
+     */
+    public function destroy($id)
     {
-        $rekening->delete();
+        $rekening = Rekening::where('id_rekening', $id)
+                            ->where('id_pengguna', Auth::user()->id_pengguna)
+                            ->firstOrFail();
+
+            DB::transaction(function() use ($rekening) {
+            // 1) Hapus semua pembayaran utang
+            $rekening->pembayaranUtangs()->delete();
+
+            // 2) Hapus semua pembayaran piutang
+            $rekening->pembayaranPiutangs()->delete();
+
+            // 3) Hapus semua transfer (keluar & masuk)
+            $rekening->transfers()->delete();
+            $rekening->transfersMasuk()->delete();
+
+            // 4) Hapus semua utang yang pakai rekening ini
+            $rekening->utangs()->delete();
+
+            // 5) Hapus semua piutang yang pakai rekening ini
+            $rekening->piutangs()->delete();
+
+            // 6) Hapus semua pengeluaran & pemasukan
+            $rekening->pengeluarans()->delete();
+            $rekening->pemasukans()->delete();
+
+            // 7) Terakhir, hapus rekening
+            $rekening->delete();
+        });
 
         return redirect()->route('rekening.index')
-                         ->with('success','Rekening berhasil dihapus.');
+                         ->with('success', 'Rekening dan semua data terkait berhasil dihapus.');
     }
 }

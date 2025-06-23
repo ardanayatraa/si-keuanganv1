@@ -9,7 +9,9 @@ class KategoriPengeluaranController extends Controller
 {
     public function index()
     {
-        $items = KategoriPengeluaran::all();
+        $items = KategoriPengeluaran::where('id_pengguna', auth()->user()->id_pengguna)
+                                    ->orderBy('nama_kategori', 'asc')
+                                    ->get();
         return view('kategori-pengeluaran.index', compact('items'));
     }
 

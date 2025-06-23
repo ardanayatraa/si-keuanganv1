@@ -17,7 +17,7 @@
                         </label>
                         <select id="id_pengguna" name="id_pengguna"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
-                            @foreach (\App\Models\Pengguna::all() as $user)
+                            @foreach (\App\Models\Pengguna::where('id_pengguna', auth()->user()->id_pengguna)->get() as $user)
                                 <option value="{{ $user->id_pengguna }}"
                                     {{ old('id_pengguna', $piutang->id_pengguna) == $user->id_pengguna ? 'selected' : '' }}>
                                     {{ $user->username }}
@@ -36,7 +36,7 @@
                         </label>
                         <select id="id_rekening" name="id_rekening"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white">
-                            @foreach (\App\Models\Rekening::all() as $r)
+                            @foreach (\App\Models\Rekening::where('id_pengguna', auth()->user()->id_pengguna)->get() as $r)
                                 <option value="{{ $r->id_rekening }}"
                                     {{ old('id_rekening', $piutang->id_rekening) == $r->id_rekening ? 'selected' : '' }}>
                                     {{ $r->nama_rekening }}
