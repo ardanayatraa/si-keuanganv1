@@ -58,30 +58,30 @@ class PengeluaranController extends Controller
         }
 
         // Validasi anggaran
-        $anggaran = Anggaran::where('id_pengguna', $data['id_pengguna'])
-            ->where('id_kategori', $data['id_kategori'])
-            ->where('periode_awal', '<=', $data['tanggal'])
-            ->where('periode_akhir', '>=', $data['tanggal'])
-            ->first();
+        // $anggaran = Anggaran::where('id_pengguna', $data['id_pengguna'])
+        //     ->where('id_kategori', $data['id_kategori'])
+        //     ->where('periode_awal', '<=', $data['tanggal'])
+        //     ->where('periode_akhir', '>=', $data['tanggal'])
+        //     ->first();
 
-        if ($anggaran) {
-            $totalSudah = Pengeluaran::where('id_pengguna', $data['id_pengguna'])
-                ->where('id_kategori', $data['id_kategori'])
-                ->whereBetween('tanggal', [
-                    $anggaran->periode_awal->toDateString(),
-                    $anggaran->periode_akhir->toDateString(),
-                ])
-                ->sum('jumlah');
+        // if ($anggaran) {
+        //     $totalSudah = Pengeluaran::where('id_pengguna', $data['id_pengguna'])
+        //         ->where('id_kategori', $data['id_kategori'])
+        //         ->whereBetween('tanggal', [
+        //             $anggaran->periode_awal->toDateString(),
+        //             $anggaran->periode_akhir->toDateString(),
+        //         ])
+        //         ->sum('jumlah');
 
-            if (($totalSudah + $data['jumlah']) > $anggaran->jumlah_batas) {
-                return back()->withErrors([
-                    'jumlah' => "Total pengeluaran kategori ini periode {$anggaran->periode_awal->format('Y-m-d')}—{$anggaran->periode_akhir->format('Y-m-d')} sudah Rp " .
-                                number_format($totalSudah,2,',','.') .
-                                ". Menambah Rp " . number_format($data['jumlah'],2,',','.') .
-                                " akan melebihi batas Rp " . number_format($anggaran->jumlah_batas,2,',','.') . "."
-                ])->withInput();
-            }
-        }
+        //     if (($totalSudah + $data['jumlah']) > $anggaran->jumlah_batas) {
+        //         return back()->withErrors([
+        //             'jumlah' => "Total pengeluaran kategori ini periode {$anggaran->periode_awal->format('Y-m-d')}—{$anggaran->periode_akhir->format('Y-m-d')} sudah Rp " .
+        //                         number_format($totalSudah,2,',','.') .
+        //                         ". Menambah Rp " . number_format($data['jumlah'],2,',','.') .
+        //                         " akan melebihi batas Rp " . number_format($anggaran->jumlah_batas,2,',','.') . "."
+        //         ])->withInput();
+        //     }
+        // }
 
         DB::transaction(function() use ($data) {
             Pengeluaran::create($data);
