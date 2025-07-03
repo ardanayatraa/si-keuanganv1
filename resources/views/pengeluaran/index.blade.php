@@ -1,45 +1,25 @@
 <x-app-layout>
     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Daftar Pengeluaran</h1>
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-            <!-- Tombol di kiri -->
-            <a href="{{ route('pengeluaran.create') }}"
-                class="inline-flex items-center space-x-2 px-5 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg shadow">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Tambah Pengeluaran</span>
-            </a>
-
-            <!-- Flash messages di kanan -->
-            <div class="flex-1 md:flex md:justify-end space-y-2 w-full md:w-auto">
-                @if (session('success'))
-                    <div
-                        class="flex items-center bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
-                        </svg>
-                        <p class="text-sm font-medium">{{ session('success') }}</p>
-                    </div>
-                @endif
-
-                @if (session('warning'))
-                    <div
-                        class="flex items-start bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 mt-0.5" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                        </svg>
-                        <div>
-                            <p class="text-sm font-medium">Peringatan</p>
-                            <p class="text-sm">{{ session('warning') }}</p>
-                        </div>
-                    </div>
-                @endif
+        {{-- Flash Messages --}}
+        @if (session('success'))
+            <div class="mb-4 px-4 py-2 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                {{ session('success') }}
             </div>
+        @endif
+
+        @if (session('warning'))
+            <div class="mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                <p>{{ session('warning') }}</p>
+            </div>
+        @endif
+
+        {{-- Konten Utama --}}
+        <div class="flex justify-between items-center mb-4">
+            <a href="{{ route('pengeluaran.create') }}"
+                class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
+                Tambah Pengeluaran
+            </a>
         </div>
 
         {{-- Filter --}}
