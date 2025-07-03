@@ -2,6 +2,7 @@
     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Daftar Pengeluaran</h1>
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+            <!-- Tombol di kiri -->
             <a href="{{ route('pengeluaran.create') }}"
                 class="inline-flex items-center space-x-2 px-5 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg shadow">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -11,7 +12,8 @@
                 <span>Tambah Pengeluaran</span>
             </a>
 
-            <div class="flex-1 mx-4 space-y-2 w-full md:w-auto">
+            <!-- Flash messages di kanan -->
+            <div class="flex-1 md:flex md:justify-end space-y-2 w-full md:w-auto">
                 @if (session('success'))
                     <div
                         class="flex items-center bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg shadow-sm">
