@@ -7,6 +7,13 @@
             </div>
         @endif
 
+        {{-- Pesan Gagal --}}
+        @if (session('error'))
+            <div class="px-4 py-3 rounded border border-red-400 bg-red-100 text-red-800">
+                {{ session('error') }}
+            </div>
+        @endif
+
         {{-- Validasi --}}
         @if ($errors->any())
             <div class="px-4 py-3 rounded border border-yellow-400 bg-yellow-100 text-yellow-800">
@@ -19,6 +26,31 @@
         @endif
 
         <h1 class="text-2xl font-bold text-gray-800">Laporan Keuangan</h1>
+
+        {{-- Backup & Restore --}}
+        <div class="flex space-x-4">
+            @if (auth()->user()->google_access_token)
+                <form action="{{ route('laporan.backup') }}" method="POST">@csrf
+                    <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Backup ke Google Drive
+                    </button>
+                </form>
+                <form action="{{ route('laporan.restore') }}" method="POST">@csrf
+                    <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                        Restore dari Google Drive
+                    </button>
+                </form>
+                <form action="{{ route('google.disconnect') }}" method="POST">@csrf
+                    <button class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                        Disconnect Drive
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('google.auth') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Connect Google Drive
+                </a>
+            @endif
+        </div>
 
         {{-- Form Generate --}}
         <form action="{{ route('laporan.generate') }}" method="POST" class="space-y-4">@csrf
@@ -93,7 +125,7 @@
                             </td>
                         </tr>
 
-                        {{-- Panel Detail (hidden by default) --}}
+                        {{-- Panel Detail --}}
                         <tr class="detail-panel bg-gray-50 hidden">
                             <td colspan="7" class="px-4 py-4">
                                 @php
@@ -241,11 +273,11 @@
         }
         document.addEventListener('DOMContentLoaded', () => {
             handleFilter("{{ old('filter_type') }}");
-            // set up detail toggles
+            // setup detail toggles
             document.querySelectorAll('.detail-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const row = btn.closest('tr').nextElementSibling;
-                    row.classList.toggle('hidden');
+                    const panel = btn.closest('tr').nextElementSibling;
+                    panel.classList.toggle('hidden');
                 });
             });
         });
