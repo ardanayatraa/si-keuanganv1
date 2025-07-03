@@ -18,21 +18,40 @@ class CustomAuthenticatedSessionController extends FortifyController
         try {
             // 1) Coba login Pengguna
             $user = Pengguna::where('email', $request->email)->first();
-            if ($user && Hash::check($request->password, $user->password)) {
-                auth()->guard('web')->login($user);
-                session(['role' => 'pengguna']);
-                return redirect()->to('/dashboard');
+
+            if ($user) {
+                // cek status
+                if ($user->status !== 'aktif') {
+                    return redirect()->back()
+                        ->withInput($request->only('email'))
+                        ->withErrors([
+                            'email' => 'Akun Anda nonaktif. Silakan hubungi administrator.',
+                        ]);
+                }
+
+                // cek password
+                if (Hash::check($request->password, $user->password)) {
+                    auth()->guard('web')->login($user);
+                    session(['role' => 'pengguna']);
+                    return redirect()->to('/dashboard');
+                }
             }
 
             // 2) Coba login Admin
             $admin = Admin::where('email', $request->email)->first();
 
-            if ($admin && Hash::check($request->password, $admin->password)) {
-                auth()->guard('admin')->login($admin);
-                session(['role' => 'admin']);
-                return redirect()->intended('/auth/admin/dashboard');
+            if ($admin) {
+                // (opsional) kalau Admin juga ada kolom status, cek di sini
+                // if ($admin->status !== 'aktif') { ... }
+
+                if (Hash::check($request->password, $admin->password)) {
+                    auth()->guard('admin')->login($admin);
+                    session(['role' => 'admin']);
+                    return redirect()->intended('/auth/admin/dashboard');
+                }
             }
 
+            // jika tidak ada yang cocok
             throw new \Exception('Kredensial salah');
 
         } catch (Throwable $e) {

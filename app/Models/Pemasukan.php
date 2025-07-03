@@ -14,7 +14,7 @@ class Pemasukan extends Model
     public $incrementing = true;
     protected $keyType = 'string';
 
-    protected $fillable = ['id_pengguna','jumlah','tanggal','id_kategori','deskripsi','id_rekening'];
+    protected $fillable = ['id_pengguna','jumlah','tanggal','id_kategori','deskripsi','id_rekening','bukti_transaksi'];
 
     public function pengguna()
     {

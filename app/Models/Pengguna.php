@@ -25,6 +25,10 @@ class Pengguna extends Authenticatable
         'password',
         'saldo',
         'foto',
+        'google_access_token',
+        'google_refresh_token',
+        'google_token_expires_at',
+        'status'
     ];
 
     /**
@@ -45,6 +49,7 @@ class Pengguna extends Authenticatable
     protected $casts = [
         // jika tidak ada kolom email_verified_at, bisa dihapus
         // 'email_verified_at' => 'datetime',
+         'google_token_expires_at' => 'datetime',
     ];
 
     /**

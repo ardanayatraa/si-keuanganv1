@@ -1,4 +1,3 @@
-{{-- resources/views/dashboard.blade.php --}}
 <x-app-layout>
     <div class="container mx-auto py-6">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Dashboard</h1>
@@ -25,7 +24,7 @@
             </div>
         </div>
 
-        {{-- Grafik --}}
+        {{-- Grafik 7 Hari --}}
         <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -40,18 +39,26 @@
                 <div id="chart-pemasukan" class="w-full h-64"></div>
             </div>
         </div>
+
+        {{-- Grafik Anggaran vs Terpakai --}}
+        <div class="mt-10 bg-white dark:bg-gray-800 p-6 rounded-xl shadow border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                Perbandingan Anggaran vs Pengeluaran per Kategori
+            </h3>
+            <div id="chart-anggaran" class="w-full h-64"></div>
+        </div>
     </div>
 
     {{-- Load ApexCharts --}}
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
-        // Data dari controller
+        // Data 7 hari
         const labels = @json($labels);
         const pemasukanData = @json($pemasukanData);
         const pengeluaranData = @json($pengeluaranData);
 
-        // Opsi untuk Grafik Pengeluaran
-        const optionsPengeluaran = {
+        // Grafik Pengeluaran
+        new ApexCharts(document.querySelector("#chart-pengeluaran"), {
             chart: {
                 type: 'area',
                 height: '100%',
@@ -74,13 +81,12 @@
                     text: 'Jumlah (Rp)'
                 },
                 labels: {
-                    formatter: val => val.toLocaleString()
+                    formatter: v => v.toLocaleString()
                 }
             },
             stroke: {
                 curve: 'smooth'
             },
-            colors: ['#ef4444'],
             fill: {
                 type: 'gradient',
                 gradient: {
@@ -91,19 +97,16 @@
             },
             tooltip: {
                 y: {
-                    formatter: val => val.toLocaleString('id-ID', {
+                    formatter: v => v.toLocaleString('id-ID', {
                         style: 'currency',
                         currency: 'IDR'
                     })
                 }
             }
-        };
+        }).render();
 
-        // Render Pengeluaran
-        new ApexCharts(document.querySelector("#chart-pengeluaran"), optionsPengeluaran).render();
-
-        // Opsi untuk Grafik Pemasukan
-        const optionsPemasukan = {
+        // Grafik Pemasukan
+        new ApexCharts(document.querySelector("#chart-pemasukan"), {
             chart: {
                 type: 'area',
                 height: '100%',
@@ -126,13 +129,12 @@
                     text: 'Jumlah (Rp)'
                 },
                 labels: {
-                    formatter: val => val.toLocaleString()
+                    formatter: v => v.toLocaleString()
                 }
             },
             stroke: {
                 curve: 'smooth'
             },
-            colors: ['#10b981'],
             fill: {
                 type: 'gradient',
                 gradient: {
@@ -143,15 +145,71 @@
             },
             tooltip: {
                 y: {
-                    formatter: val => val.toLocaleString('id-ID', {
+                    formatter: v => v.toLocaleString('id-ID', {
                         style: 'currency',
                         currency: 'IDR'
                     })
                 }
             }
-        };
+        }).render();
 
-        // Render Pemasukan
-        new ApexCharts(document.querySelector("#chart-pemasukan"), optionsPemasukan).render();
+        // Data Anggaran
+        const labelsAnggaran = @json($labelsAnggaran);
+        const batasData = @json($batasData);
+        const terpakaiData = @json($terpakaiData);
+
+        // Grafik Anggaran vs Terpakai dengan X axis kategori
+        new ApexCharts(document.querySelector("#chart-anggaran"), {
+            chart: {
+                type: 'bar',
+                height: '100%',
+                toolbar: {
+                    show: false
+                }
+            },
+            series: [{
+                    name: 'Batas Anggaran',
+                    data: batasData
+                },
+                {
+                    name: 'Terpakai',
+                    data: terpakaiData
+                }
+            ],
+            xaxis: {
+                type: 'category',
+                categories: labelsAnggaran,
+                title: {
+                    text: 'Kategori'
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Jumlah (Rp)'
+                },
+                labels: {
+                    formatter: v => v.toLocaleString()
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '50%'
+                }
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent', 'transparent']
+            },
+            tooltip: {
+                y: {
+                    formatter: v => v.toLocaleString('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR'
+                    })
+                }
+            }
+        }).render();
     </script>
 </x-app-layout>

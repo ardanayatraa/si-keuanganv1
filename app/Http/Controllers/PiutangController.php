@@ -13,26 +13,34 @@ use Illuminate\Support\Facades\DB;
 class PiutangController extends Controller
 {
     /**
-     * Daftar piutang milik user login.
+     * Daftar piutang milik user login, dengan filter tanggal_pinjam.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $items = Piutang::with(['pengguna', 'rekening'])
-            ->where('id_pengguna', Auth::user()->id_pengguna)
-            ->orderBy('tanggal_pinjam', 'desc')
-            ->get();
+        $start = $request->input('start_date');
+        $end   = $request->input('end_date');
 
-        return view('piutang.index', compact('items'));
+        $query = Piutang::with(['pengguna','rekening'])
+            ->where('id_pengguna', Auth::user()->id_pengguna);
+
+        if ($start) {
+            $query->whereDate('tanggal_pinjam', '>=', $start);
+        }
+        if ($end) {
+            $query->whereDate('tanggal_pinjam', '<=', $end);
+        }
+
+        $items = $query->orderBy('tanggal_pinjam','desc')->get();
+
+        return view('piutang.index', compact('items','start','end'));
     }
 
     /**
-     * Form tambah piutang. Rekening hanya milik user.
+     * Form tambah piutang.
      */
     public function create()
     {
-        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)
-            ->get();
-
+        $rekenings = Rekening::where('id_pengguna',Auth::user()->id_pengguna)->get();
         return view('piutang.create', compact('rekenings'));
     }
 
@@ -48,89 +56,74 @@ class PiutangController extends Controller
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
             'deskripsi'           => 'nullable|string',
         ]);
-
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
         DB::transaction(function() use ($data) {
-            // 1) Pastikan kategori "Piutang" ada
+            // 1) Pastikan kategori "Piutang"
             $kategori = KategoriPengeluaran::firstOrCreate(
-                [
-                    'id_pengguna'   => $data['id_pengguna'],
-                    'nama_kategori' => 'Piutang',
-                ],
-                [
-                    'deskripsi' => 'Kategori untuk pengeluaran pinjaman (Piutang)',
-                    'icon'      => 'fas fa-handshake',
-                ]
+                ['id_pengguna'=>$data['id_pengguna'],'nama_kategori'=>'Piutang'],
+                ['deskripsi'=>'Kategori untuk pengeluaran pinjaman (Piutang)','icon'=>'fas fa-handshake']
             );
-
-            // 2) Catat pengeluaran keluar
+            // 2) Catat pengeluaran
             Pengeluaran::create([
-                'id_pengguna' => $data['id_pengguna'],
-                'id_rekening' => $data['id_rekening'],
-                'jumlah'      => $data['jumlah'],
-                'tanggal'     => $data['tanggal_pinjam'],
-                'id_kategori' => $kategori->id_kategori_pengeluaran,
-                'deskripsi'   => 'Pinjamkan uang (Piutang)',
+                'id_pengguna'=>$data['id_pengguna'],
+                'id_rekening'=>$data['id_rekening'],
+                'jumlah'=>$data['jumlah'],
+                'tanggal'=>$data['tanggal_pinjam'],
+                'id_kategori'=>$kategori->id_kategori_pengeluaran,
+                'deskripsi'=>'Pinjamkan uang (Piutang)'
             ]);
-
-            // 3) Kurangi saldo rekening
-            Rekening::where('id_rekening', $data['id_rekening'])
-                   ->decrement('saldo', $data['jumlah']);
-
+            // 3) Kurangi saldo
+            Rekening::where('id_rekening',$data['id_rekening'])->decrement('saldo',$data['jumlah']);
             // 4) Buat entri piutang
             Piutang::create([
-                'id_pengguna'        => $data['id_pengguna'],
-                'id_rekening'        => $data['id_rekening'],
-                'id_pemasukan'       => null,
-                'jumlah'             => $data['jumlah'],
-                'sisa_piutang'       => $data['jumlah'],
-                'tanggal_pinjam'     => $data['tanggal_pinjam'],
-                'tanggal_jatuh_tempo'=> $data['tanggal_jatuh_tempo'],
-                'deskripsi'          => $data['deskripsi'] ?? null,
-                'status'             => 'belum lunas',
+                'id_pengguna'=>$data['id_pengguna'],
+                'id_rekening'=>$data['id_rekening'],
+                'id_pemasukan'=>null,
+                'jumlah'=>$data['jumlah'],
+                'sisa_piutang'=>$data['jumlah'],
+                'tanggal_pinjam'=>$data['tanggal_pinjam'],
+                'tanggal_jatuh_tempo'=>$data['tanggal_jatuh_tempo'],
+                'deskripsi'=>$data['deskripsi'] ?? null,
+                'status'=>'belum lunas',
             ]);
         });
 
         return redirect()->route('piutang.index')
-                         ->with('success', 'Piutang berhasil dicatat dan saldo rekening terpotong.');
+                         ->with('success','Piutang berhasil dicatat dan saldo rekening terpotong.');
     }
 
     /**
-     * Detail piutang (pastikan milik user).
+     * Detail piutang.
      */
     public function show($id)
     {
-        $piutang = Piutang::with(['pengguna', 'rekening'])
-            ->where('id_piutang', $id)
-            ->where('id_pengguna', Auth::user()->id_pengguna)
+        $piutang = Piutang::with(['pengguna','rekening'])
+            ->where('id_piutang',$id)
+            ->where('id_pengguna',Auth::user()->id_pengguna)
             ->firstOrFail();
-
         return view('piutang.show', compact('piutang'));
     }
 
     /**
-     * Form edit piutang (pastikan milik user).
+     * Form edit piutang.
      */
     public function edit($id)
     {
-        $piutang = Piutang::where('id_piutang', $id)
-            ->where('id_pengguna', Auth::user()->id_pengguna)
+        $piutang = Piutang::where('id_piutang',$id)
+            ->where('id_pengguna',Auth::user()->id_pengguna)
             ->firstOrFail();
-
-        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)
-            ->get();
-
-        return view('piutang.edit', compact('piutang', 'rekenings'));
+        $rekenings = Rekening::where('id_pengguna',Auth::user()->id_pengguna)->get();
+        return view('piutang.edit', compact('piutang','rekenings'));
     }
 
     /**
      * Update piutang, rollback & recreate pengeluaran, reset sisa.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request,$id)
     {
-        $piutang = Piutang::where('id_piutang', $id)
-            ->where('id_pengguna', Auth::user()->id_pengguna)
+        $piutang = Piutang::where('id_piutang',$id)
+            ->where('id_pengguna',Auth::user()->id_pengguna)
             ->firstOrFail();
 
         $data = $request->validate([
@@ -140,59 +133,41 @@ class PiutangController extends Controller
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
             'deskripsi'           => 'nullable|string',
         ]);
-
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
-        DB::transaction(function() use ($data, $piutang) {
-            // Refund saldo lama
-            Rekening::where('id_rekening', $piutang->id_rekening)
-                   ->increment('saldo', $piutang->jumlah);
-
-            // Hapus pengeluaran lama
-            Pengeluaran::where('id_pengeluaran', $piutang->id_pengeluaran)
-                       ->delete();
-
-            // Reset data piutang
+        DB::transaction(function() use ($data,$piutang) {
+            // refund & hapus pengeluaran lama
+            Rekening::where('id_rekening',$piutang->id_rekening)->increment('saldo',$piutang->jumlah);
+            Pengeluaran::where('id_pengeluaran',$piutang->id_pengeluaran)->delete();
+            // update piutang
             $piutang->update([
-                'id_rekening'        => $data['id_rekening'],
-                'jumlah'             => $data['jumlah'],
-                'sisa_piutang'       => $data['jumlah'],
-                'tanggal_pinjam'     => $data['tanggal_pinjam'],
-                'tanggal_jatuh_tempo'=> $data['tanggal_jatuh_tempo'],
-                'deskripsi'          => $data['deskripsi'] ?? null,
-                'status'             => 'belum lunas',
-                'id_pemasukan'       => null,
+                'id_rekening'=>$data['id_rekening'],
+                'jumlah'=>$data['jumlah'],
+                'sisa_piutang'=>$data['jumlah'],
+                'tanggal_pinjam'=>$data['tanggal_pinjam'],
+                'tanggal_jatuh_tempo'=>$data['tanggal_jatuh_tempo'],
+                'deskripsi'=>$data['deskripsi'] ?? null,
+                'status'=>'belum lunas',
+                'id_pemasukan'=>null,
             ]);
-
-            // Pastikan kategori "Piutang"
+            // recreate kategori & pengeluaran
             $kategori = KategoriPengeluaran::firstOrCreate(
-                [
-                    'id_pengguna'   => $data['id_pengguna'],
-                    'nama_kategori' => 'Piutang',
-                ],
-                [
-                    'deskripsi' => 'Kategori untuk pengeluaran pinjaman (Piutang)',
-                    'icon'      => 'fas fa-handshake',
-                ]
+                ['id_pengguna'=>$data['id_pengguna'],'nama_kategori'=>'Piutang'],
+                ['deskripsi'=>'Kategori untuk pengeluaran pinjaman (Piutang)','icon'=>'fas fa-handshake']
             );
-
-            // Buat ulang pengeluaran baru
             Pengeluaran::create([
-                'id_pengguna' => $data['id_pengguna'],
-                'id_rekening' => $data['id_rekening'],
-                'jumlah'      => $data['jumlah'],
-                'tanggal'     => $data['tanggal_pinjam'],
-                'id_kategori' => $kategori->id_kategori_pengeluaran,
-                'deskripsi'   => 'Pinjamkan uang (Piutang)',
+                'id_pengguna'=>$data['id_pengguna'],
+                'id_rekening'=>$data['id_rekening'],
+                'jumlah'=>$data['jumlah'],
+                'tanggal'=>$data['tanggal_pinjam'],
+                'id_kategori'=>$kategori->id_kategori_pengeluaran,
+                'deskripsi'=>'Pinjamkan uang (Piutang)'
             ]);
-
-            // Kurangi saldo baru
-            Rekening::where('id_rekening', $data['id_rekening'])
-                   ->decrement('saldo', $data['jumlah']);
+            Rekening::where('id_rekening',$data['id_rekening'])->decrement('saldo',$data['jumlah']);
         });
 
         return redirect()->route('piutang.index')
-                         ->with('success', 'Piutang berhasil diperbarui dan mutasi rekening disesuaikan.');
+                         ->with('success','Piutang berhasil diperbarui dan mutasi rekening disesuaikan.');
     }
 
     /**
@@ -200,24 +175,16 @@ class PiutangController extends Controller
      */
     public function destroy($id)
     {
-        $piutang = Piutang::where('id_piutang', $id)
-            ->where('id_pengguna', Auth::user()->id_pengguna)
+        $piutang = Piutang::where('id_piutang',$id)
+            ->where('id_pengguna',Auth::user()->id_pengguna)
             ->firstOrFail();
-
         DB::transaction(function() use ($piutang) {
-            // Refund saldo
-            Rekening::where('id_rekening', $piutang->id_rekening)
-                   ->increment('saldo', $piutang->jumlah);
-
-            // Hapus pengeluaran terkait
-            Pengeluaran::where('id_pengeluaran', $piutang->id_pengeluaran)
-                       ->delete();
-
-            // Hapus record piutang
+            // refund saldo & hapus pengeluaran
+            Rekening::where('id_rekening',$piutang->id_rekening)->increment('saldo',$piutang->jumlah);
+            Pengeluaran::where('id_pengeluaran',$piutang->id_pengeluaran)->delete();
             $piutang->delete();
         });
-
         return redirect()->route('piutang.index')
-                         ->with('success', 'Piutang berhasil dihapus dan saldo rekening dikembalikan.');
+                         ->with('success','Piutang berhasil dihapus dan saldo rekening dikembalikan.');
     }
 }

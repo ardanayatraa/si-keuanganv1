@@ -6,32 +6,29 @@ use Illuminate\Http\Request;
 use App\Models\Pemasukan;
 use App\Models\Pengeluaran;
 use App\Models\Rekening;
+use App\Models\Anggaran;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     /**
-     * Tampilkan dashboard dengan ringkasan dan grafik 7 hari untuk user login.
+     * Tampilkan dashboard dengan ringkasan, grafik 7 hari, dan grafik anggaran.
      */
     public function index()
     {
         $userId = Auth::user()->id_pengguna;
 
-        // 1) Total saldo dari semua rekening milik user
-        $totalSaldo = Rekening::where('id_pengguna', $userId)
-                              ->sum('saldo');
+        // Total saldo
+        $totalSaldo = Rekening::where('id_pengguna', $userId)->sum('saldo');
 
-        // 2) Total pemasukan & pengeluaran milik user
-        $totalPemasukan   = Pemasukan::where('id_pengguna', $userId)
-                                      ->sum('jumlah');
-        $totalPengeluaran = Pengeluaran::where('id_pengguna', $userId)
-                                       ->sum('jumlah');
+        // Total pemasukan & pengeluaran
+        $totalPemasukan   = Pemasukan::where('id_pengguna', $userId)->sum('jumlah');
+        $totalPengeluaran = Pengeluaran::where('id_pengguna', $userId)->sum('jumlah');
 
-        // 3) Siapkan label & data per hari untuk 7 hari terakhir, milik user
+        // Grafik 7 hari terakhir
         $labels          = [];
         $pemasukanData   = [];
         $pengeluaranData = [];
-
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i)->toDateString();
             $labels[]          = $date;
@@ -43,14 +40,35 @@ class DashboardController extends Controller
                                             ->sum('jumlah');
         }
 
-        // 4) Kirim ke view
+        // Grafik Anggaran vs Terpakai per kategori
+        $anggarans = Anggaran::with('kategori')
+            ->where('id_pengguna', $userId)
+            ->get();
+
+        $labelsAnggaran = [];
+        $batasData      = [];
+        $terpakaiData   = [];
+        foreach ($anggarans as $ang) {
+            $labelsAnggaran[] = $ang->kategori->nama_kategori;
+            $batasData[]      = $ang->jumlah_batas;
+            $terpakaiData[]   = Pengeluaran::where('id_pengguna', $userId)
+                ->where('id_kategori', $ang->id_kategori)
+                ->whereBetween('tanggal', [
+                    $ang->periode_awal->toDateString(),
+                    $ang->periode_akhir->toDateString()
+                ])->sum('jumlah');
+        }
+
         return view('dashboard', compact(
             'totalSaldo',
             'totalPemasukan',
             'totalPengeluaran',
             'labels',
             'pemasukanData',
-            'pengeluaranData'
+            'pengeluaranData',
+            'labelsAnggaran',
+            'batasData',
+            'terpakaiData'
         ));
     }
 }

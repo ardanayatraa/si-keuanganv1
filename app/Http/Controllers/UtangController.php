@@ -13,32 +13,37 @@ use Illuminate\Support\Facades\DB;
 class UtangController extends Controller
 {
     /**
-     * Daftar utang milik user login.
+     * Daftar utang milik user login, dengan filter tanggal_pinjam.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $items = Utang::with(['pengguna', 'rekening'])
-            ->where('id_pengguna', Auth::user()->id_pengguna)
+        // Ambil filter tanggal jika ada
+        $start = $request->input('start_date');
+        $end   = $request->input('end_date');
+
+        $query = Utang::with(['pengguna', 'rekening'])
+            ->where('id_pengguna', Auth::user()->id_pengguna);
+
+        if ($start) {
+            $query->whereDate('tanggal_pinjam', '>=', $start);
+        }
+        if ($end) {
+            $query->whereDate('tanggal_pinjam', '<=', $end);
+        }
+
+        $items = $query
             ->orderBy('tanggal_pinjam', 'desc')
             ->get();
 
-        return view('utang.index', compact('items'));
+        return view('utang.index', compact('items', 'start', 'end'));
     }
 
-    /**
-     * Form tambah utang. Rekening hanya milik user.
-     */
     public function create()
     {
-        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)
-                              ->get();
-
+        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
         return view('utang.create', compact('rekenings'));
     }
 
-    /**
-     * Simpan utang baru.
-     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -64,7 +69,7 @@ class UtangController extends Controller
                 'status'              => 'belum dibayar',
             ]);
 
-            // 2) Pastikan kategori “Utang” ada untuk user
+            // 2) Pastikan kategori “Utang” ada
             $kategoriUtang = KategoriPemasukan::firstOrCreate(
                 ['id_pengguna' => $data['id_pengguna'], 'nama_kategori' => 'Utang'],
                 ['deskripsi' => 'Kategori mencatat penerimaan utang', 'icon' => 'fas fa-hand-holding-usd']
@@ -89,9 +94,6 @@ class UtangController extends Controller
                          ->with('success', 'Utang berhasil dicatat dan saldo rekening bertambah.');
     }
 
-    /**
-     * Detail utang (pastikan milik user).
-     */
     public function show($id)
     {
         $utang = Utang::with(['pengguna','rekening'])
@@ -102,24 +104,17 @@ class UtangController extends Controller
         return view('utang.show', compact('utang'));
     }
 
-    /**
-     * Form edit utang (pastikan milik user).
-     */
     public function edit($id)
     {
         $utang = Utang::where('id_utang', $id)
             ->where('id_pengguna', Auth::user()->id_pengguna)
             ->firstOrFail();
 
-        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)
-                              ->get();
+        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
 
         return view('utang.edit', compact('utang','rekenings'));
     }
 
-    /**
-     * Update utang.
-     */
     public function update(Request $request, $id)
     {
         $utang = Utang::where('id_utang', $id)
@@ -182,9 +177,6 @@ class UtangController extends Controller
                          ->with('success', 'Utang berhasil diperbarui dan mutasi rekening disesuaikan.');
     }
 
-    /**
-     * Hapus utang (pastikan milik user).
-     */
     public function destroy($id)
     {
         $utang = Utang::where('id_utang', $id)

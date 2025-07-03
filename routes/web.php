@@ -19,37 +19,43 @@ use App\Http\Controllers\PembayaranPiutangController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\CustomAuthenticatedSessionController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\GoogleDriveController;
 use App\Http\Controllers\LaporanBackupController;
 use Illuminate\Support\Facades\Auth;
 
-Route::get('/google/auth', function () {
-    $client = new \Google_Client();
-    $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
-    $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
-    $client->setRedirectUri(route('google.callback'));
-    $client->setAccessType('offline');
-    $client->setPrompt('consent');
-    $client->setScopes(['https://www.googleapis.com/auth/drive.file']);
+// Route::get('/google/auth', function () {
+//     $client = new \Google_Client();
+//     $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
+//     $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
+//     $client->setRedirectUri(route('google.callback'));
+//     $client->setAccessType('offline');
+//     $client->setPrompt('consent');
+//     $client->setScopes(['https://www.googleapis.com/auth/drive.file']);
 
-    return redirect($client->createAuthUrl());
-})->name('google.auth');
+//     return redirect($client->createAuthUrl());
+// })->name('google.auth');
 
-Route::get('/google/callback', function () {
-    $client = new \Google_Client();
-    $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
-    $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
-    $client->setRedirectUri(route('google.callback'));
+// Route::get('/google/callback', function () {
+//     $client = new \Google_Client();
+//     $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
+//     $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
+//     $client->setRedirectUri(route('google.callback'));
 
-    $code = request('code');
-    $token = $client->fetchAccessTokenWithAuthCode($code);
+//     $code = request('code');
+//     $token = $client->fetchAccessTokenWithAuthCode($code);
 
-    return response()->json([
-        'access_token' => $token['access_token'] ?? null,
-        'refresh_token' => $token['refresh_token'] ?? '(kosong - mungkin pernah diambil sebelumnya)',
-        'expires_in' => $token['expires_in'] ?? null,
-    ]);
-})->name('google.callback');
+//     return response()->json([
+//         'access_token' => $token['access_token'] ?? null,
+//         'refresh_token' => $token['refresh_token'] ?? '(kosong - mungkin pernah diambil sebelumnya)',
+//         'expires_in' => $token['expires_in'] ?? null,
+//     ]);
+// })->name('google.callback');
+
+
+ Route::get('/google/auth',      [GoogleAuthController::class, 'redirectToGoogle'])->name('google.auth');
+    Route::get('/google/callback',  [GoogleAuthController::class, 'handleCallback'])->name('google.callback');
+    Route::post('/google/disconnect',[GoogleAuthController::class, 'disconnect'])->name('google.disconnect');
 
 
 // Landing Page
@@ -87,6 +93,9 @@ Route::prefix('auth/admin')
          // Dashboard
          Route::get('dashboard', [AdminController::class,'dashboard'])
               ->name('dashboard');
+
+                   Route::patch('/pengguna/{pengguna}/toggle-status', [PenggunaController::class, 'toggleStatus'])
+        ->name('pengguna.toggleStatus');
          // Resource CRUD untuk Pengguna
          Route::resource('pengguna', PenggunaController::class)
               ->names([
@@ -119,7 +128,11 @@ Route::middleware([
     Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
     Route::get('/pengguna/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
     Route::match(['put', 'patch'], '/pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
+
     Route::delete('/pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+    // Toggle status via AJAX
+
+
      Route::prefix('utang')->name('utang.')->group(function () {
         Route::resource('pembayaran', PembayaranUtangController::class);
     });

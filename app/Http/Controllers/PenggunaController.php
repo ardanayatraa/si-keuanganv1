@@ -143,4 +143,21 @@ class PenggunaController extends Controller
         return redirect()->route('pengguna.profile.edit')
                          ->with('success', 'Profil berhasil diperbarui.');
     }
+
+    /**
+ * Toggle antara 'aktif' <-> 'nonaktif'
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function toggleStatus(Request $request, Pengguna $pengguna)
+{
+
+
+    $pengguna->status = $pengguna->status === 'aktif' ? 'nonaktif' : 'aktif';
+    $pengguna->save();
+
+    return response()->json([
+        'status' => $pengguna->status,
+        'label'  => $pengguna->status === 'aktif' ? 'Aktif' : 'Nonaktif',
+    ]);
+}
 }
