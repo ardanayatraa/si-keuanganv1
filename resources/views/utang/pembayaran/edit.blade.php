@@ -22,7 +22,7 @@
                                     // hitung original & paid untuk masing-masing utang
                                     $paid = $utang->pembayaranUtang->sum('jumlah_dibayar');
                                     $original = $utang->jumlah;
-                                    $remaining = $original - $paid;
+                                    $remaining = $utang->sisa_hutang;
                                 @endphp
                                 <option value="{{ $utang->id_utang }}" data-original="{{ $original }}"
                                     data-paid="{{ $paid }}" data-remaining="{{ $remaining }}"
@@ -30,6 +30,9 @@
                                     {{ old('id_utang', $p->id_utang) == $utang->id_utang ? 'selected' : '' }}>
                                     {{ $utang->pengguna->username }} — sisa {{ number_format($remaining, 2, ',', '.') }}
                                     (tempo {{ \Carbon\Carbon::parse($utang->tanggal_jatuh_tempo)->format('d/m/Y') }})
+                                    @if($utang->status == 'lunas')
+                                        <span class="text-green-600">(Lunas)</span>
+                                    @endif
                                 </option>
                             @endforeach
                         </select>

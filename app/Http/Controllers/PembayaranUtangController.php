@@ -91,10 +91,12 @@ class PembayaranUtangController extends Controller
                 'deskripsi'          => $data['deskripsi'] ?? null,
             ]);
 
-            // Kurangi sisa utang
-            $utang->decrement('jumlah', $data['jumlah_dibayar']);
-            if ($utang->jumlah <= 0) {
-                $utang->delete();
+            // Kurangi sisa hutang
+            $utang->decrement('sisa_hutang', $data['jumlah_dibayar']);
+            
+            // Update status jika sudah lunas
+            if ($utang->sisa_hutang <= 0) {
+                $utang->update(['status' => 'lunas']);
             }
         });
 
@@ -158,7 +160,12 @@ class PembayaranUtangController extends Controller
             // Rollback utang & mutasi lama
             $oldUtang   = $p->utang;
             $oldAmount  = $p->jumlah_dibayar;
-            $oldUtang->increment('jumlah', $oldAmount);
+            $oldUtang->increment('sisa_hutang', $oldAmount);
+            
+            // Update status kembali ke aktif jika sebelumnya lunas
+            if ($oldUtang->status == 'lunas' && $oldUtang->sisa_hutang > 0) {
+                $oldUtang->update(['status' => 'aktif']);
+            }
 
             $oldPeng = $p->pengeluaran;
             Rekening::find($oldPeng->id_rekening)
@@ -197,9 +204,11 @@ class PembayaranUtangController extends Controller
 
             // Kurangi utang baru
             $newUtang = $p->utang;
-            $newUtang->decrement('jumlah', $data['jumlah_dibayar']);
-            if ($newUtang->jumlah <= 0) {
-                $newUtang->delete();
+            $newUtang->decrement('sisa_hutang', $data['jumlah_dibayar']);
+            
+            // Update status jika sudah lunas
+            if ($newUtang->sisa_hutang <= 0) {
+                $newUtang->update(['status' => 'lunas']);
             }
         });
 
@@ -220,7 +229,12 @@ class PembayaranUtangController extends Controller
         DB::transaction(function() use ($p) {
             // Rollback utang & mutasi
             $utang = $p->utang;
-            $utang->increment('jumlah', $p->jumlah_dibayar);
+            $utang->increment('sisa_hutang', $p->jumlah_dibayar);
+            
+            // Update status kembali ke aktif jika sebelumnya lunas
+            if ($utang->status == 'lunas' && $utang->sisa_hutang > 0) {
+                $utang->update(['status' => 'aktif']);
+            }
 
             $peng = $p->pengeluaran;
             Rekening::find($peng->id_rekening)

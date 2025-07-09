@@ -18,13 +18,16 @@ class Utang extends Model
         'id_pengguna',
         'id_rekening',
         'jumlah',
+        'sisa_hutang',
         'tanggal_pinjam',
         'tanggal_jatuh_tempo',
         'deskripsi',
+        'status',
     ];
 
     protected $casts = [
         'jumlah'             => 'double',
+        'sisa_hutang'        => 'double',
         'tanggal_pinjam'     => 'date',
         'tanggal_jatuh_tempo'=> 'date',
     ];

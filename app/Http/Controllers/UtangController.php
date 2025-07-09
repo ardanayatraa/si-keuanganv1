@@ -65,8 +65,8 @@ class UtangController extends Controller
                 'tanggal_pinjam'      => $data['tanggal_pinjam'],
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
                 'deskripsi'           => $data['deskripsi'] ?? null,
-                'sisa_utang'          => $data['jumlah'],
-                'status'              => 'belum dibayar',
+                'sisa_hutang'         => $data['jumlah'],
+                'status'              => 'aktif',
             ]);
 
             // 2) Pastikan kategori “Utang” ada
@@ -145,11 +145,11 @@ class UtangController extends Controller
             $utang->update([
                 'id_rekening'         => $data['id_rekening'],
                 'jumlah'              => $data['jumlah'],
-                'sisa_utang'          => $data['jumlah'],
+                'sisa_hutang'         => $data['jumlah'],
                 'tanggal_pinjam'      => $data['tanggal_pinjam'],
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
                 'deskripsi'           => $data['deskripsi'] ?? null,
-                'status'              => 'belum dibayar',
+                'status'              => 'aktif',
             ]);
 
             // pastikan kategori Utang

@@ -15,8 +15,8 @@
                         @foreach ($utangs as $u)
                             @php
                                 $paid = $u->pembayaran->sum('jumlah_dibayar');
-                                $remaining = $u->jumlah;
-                                $original = $paid + $remaining;
+                                $remaining = $u->sisa_hutang;
+                                $original = $u->jumlah;
                             @endphp
                             <option value="{{ $u->id_utang }}" data-original="{{ $original }}"
                                 data-paid="{{ $paid }}" data-remaining="{{ $remaining }}"
@@ -24,6 +24,9 @@
                                 {{ old('id_utang') == $u->id_utang ? 'selected' : '' }}>
                                 {{ $u->pengguna->username }} — sisa {{ number_format($remaining, 2, ',', '.') }}
                                 (tempo {{ \Carbon\Carbon::parse($u->tanggal_jatuh_tempo)->format('d/m/Y') }})
+                                @if($u->status == 'lunas')
+                                    <span class="text-green-600">(Lunas)</span>
+                                @endif
                             </option>
                         @endforeach
                     </select>

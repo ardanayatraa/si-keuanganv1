@@ -52,6 +52,10 @@
                             Rekening</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Jumlah</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                            Sisa Hutang</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                            Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Tanggal Pinjam</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
@@ -69,6 +73,19 @@
                             <td class="px-6 py-4 whitespace-nowrap">{{ $item->rekening->nama_rekening }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">Rp
                                 {{ number_format($item->jumlah, 2, ',', '.') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">Rp
+                                {{ number_format($item->sisa_hutang, 2, ',', '.') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                @if($item->status == 'aktif')
+                                    <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                                        Aktif
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                        Lunas
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 {{ \Carbon\Carbon::parse($item->tanggal_pinjam)->format('d/m/Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -87,7 +104,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                 Belum ada data utang.
                             </td>
                         </tr>
