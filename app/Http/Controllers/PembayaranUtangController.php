@@ -93,7 +93,7 @@ class PembayaranUtangController extends Controller
 
             // Kurangi sisa hutang
             $utang->decrement('sisa_hutang', $data['jumlah_dibayar']);
-            
+
             // Update status jika sudah lunas
             if ($utang->sisa_hutang <= 0) {
                 $utang->update(['status' => 'lunas']);
@@ -161,7 +161,7 @@ class PembayaranUtangController extends Controller
             $oldUtang   = $p->utang;
             $oldAmount  = $p->jumlah_dibayar;
             $oldUtang->increment('sisa_hutang', $oldAmount);
-            
+
             // Update status kembali ke aktif jika sebelumnya lunas
             if ($oldUtang->status == 'lunas' && $oldUtang->sisa_hutang > 0) {
                 $oldUtang->update(['status' => 'aktif']);
@@ -205,7 +205,7 @@ class PembayaranUtangController extends Controller
             // Kurangi utang baru
             $newUtang = $p->utang;
             $newUtang->decrement('sisa_hutang', $data['jumlah_dibayar']);
-            
+
             // Update status jika sudah lunas
             if ($newUtang->sisa_hutang <= 0) {
                 $newUtang->update(['status' => 'lunas']);
@@ -230,7 +230,7 @@ class PembayaranUtangController extends Controller
             // Rollback utang & mutasi
             $utang = $p->utang;
             $utang->increment('sisa_hutang', $p->jumlah_dibayar);
-            
+
             // Update status kembali ke aktif jika sebelumnya lunas
             if ($utang->status == 'lunas' && $utang->sisa_hutang > 0) {
                 $utang->update(['status' => 'aktif']);

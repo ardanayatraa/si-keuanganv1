@@ -66,7 +66,7 @@ class UtangController extends Controller
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
                 'deskripsi'           => $data['deskripsi'] ?? null,
                 'sisa_hutang'         => $data['jumlah'],
-                'status'              => 'aktif',
+                'status'              => 'Belum Lunas',
             ]);
 
             // 2) Pastikan kategori “Utang” ada
@@ -149,7 +149,7 @@ class UtangController extends Controller
                 'tanggal_pinjam'      => $data['tanggal_pinjam'],
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
                 'deskripsi'           => $data['deskripsi'] ?? null,
-                'status'              => 'aktif',
+                'status'              => 'Belum Lunas',
             ]);
 
             // pastikan kategori Utang

@@ -19,12 +19,10 @@
         {{-- Filter --}}
         <form action="{{ route('piutang.index') }}" method="GET" class="mb-4 flex flex-wrap gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pinjam ≥</label>
                 <input type="date" name="start_date" value="{{ old('start_date', $start) }}"
                     class="mt-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pinjam ≤</label>
                 <input type="date" name="end_date" value="{{ old('end_date', $end) }}"
                     class="mt-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm">
             </div>

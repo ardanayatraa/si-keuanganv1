@@ -23,16 +23,12 @@
         {{-- Filter Tanggal Pinjam --}}
         <form action="{{ route('utang.index') }}" method="GET" class="mb-4 flex space-x-4">
             <div>
-                <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Pinjam ≥
-                </label>
+
                 <input type="date" name="start_date" id="start_date" value="{{ old('start_date', $start) }}"
                     class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm">
             </div>
             <div>
-                <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Pinjam ≤
-                </label>
+
                 <input type="date" name="end_date" id="end_date" value="{{ old('end_date', $end) }}"
                     class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm">
             </div>
