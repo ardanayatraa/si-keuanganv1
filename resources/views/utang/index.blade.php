@@ -54,7 +54,8 @@
                             Jumlah</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Sisa Hutang</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        <th
+                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Tanggal Pinjam</th>
@@ -76,12 +77,14 @@
                             <td class="px-6 py-4 whitespace-nowrap text-right">Rp
                                 {{ number_format($item->sisa_hutang, 2, ',', '.') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                @if($item->status == 'aktif')
-                                    <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                                @if ($item->status == 'aktif')
+                                    <span
+                                        class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
                                         Aktif
                                     </span>
                                 @else
-                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                    <span
+                                        class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
                                         Lunas
                                     </span>
                                 @endif
@@ -94,6 +97,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <a href="{{ route('utang.edit', $item->id_utang) }}"
                                     class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm mr-1">Edit</a>
+                                @if ($item->status !== 'lunas')
+                                    <a href="{{ route('utang.pembayaran.create') }}?id_piutang={{ $item->id_piutang }}"
+                                        class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">Bayar</a>
+                                @endif
                                 <form action="{{ route('utang.destroy', $item->id_utang) }}" method="POST"
                                     class="inline">
                                     @csrf @method('DELETE')

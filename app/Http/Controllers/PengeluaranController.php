@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pengeluaran;
 use App\Models\Rekening;
 use App\Models\Anggaran;
+use App\Models\KategoriPengeluaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,9 @@ class PengeluaranController extends Controller
     public function create()
     {
         $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
-        return view('pengeluaran.create', compact('rekenings'));
+        $kategoris = KategoriPengeluaran::where('id_pengguna', Auth::user()->id_pengguna)->get();
+
+        return view('pengeluaran.create', compact('rekenings', 'kategoris'));
     }
 
     public function store(Request $request)
@@ -108,13 +111,15 @@ class PengeluaranController extends Controller
 
     public function edit($id)
     {
-        $item = Pengeluaran::where('id_pengeluaran', $id)
+        $pengeluaran = Pengeluaran::with(['kategori', 'rekening'])
+            ->where('id_pengeluaran', $id)
             ->where('id_pengguna', Auth::user()->id_pengguna)
             ->firstOrFail();
 
         $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
+        $kategoris = KategoriPengeluaran::where('id_pengguna', Auth::user()->id_pengguna)->get();
 
-        return view('pengeluaran.edit', compact('item','rekenings'));
+        return view('pengeluaran.edit', compact('pengeluaran', 'rekenings', 'kategoris'));
     }
 
     public function update(Request $request, $id)
