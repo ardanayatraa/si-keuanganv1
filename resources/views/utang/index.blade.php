@@ -73,10 +73,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-right">Rp
                                 {{ number_format($item->sisa_hutang, 2, ',', '.') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                @if ($item->status == 'aktif')
+                                @if ($item->status == 'belum lunas')
                                     <span
                                         class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                                        Aktif
+                                        Belum Lunas
                                     </span>
                                 @else
                                     <span
