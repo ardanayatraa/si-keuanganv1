@@ -107,10 +107,6 @@ class PembayaranPiutangController extends Controller
                 'deskripsi'          => $data['deskripsi'] ?? null,
             ]);
 
-            // Jika sudah lunas, hapus record piutang agar tak muncul lagi
-            if ($piutang->status === 'lunas') {
-                $piutang->delete();
-            }
         });
 
         return redirect()
@@ -228,10 +224,6 @@ class PembayaranPiutangController extends Controller
                 'deskripsi'          => $data['deskripsi'] ?? null,
             ]);
 
-            // jika lunas, hapus piutang
-            if ($piutangNew->status === 'lunas') {
-                $piutangNew->delete();
-            }
         });
 
         return redirect()
