@@ -149,15 +149,30 @@ class PenggunaController extends Controller
  * @return \Illuminate\Http\JsonResponse
  */
 public function toggleStatus(Request $request, Pengguna $pengguna)
-{
+    {
+        try {
+            // Toggle status
+            $newStatus = $pengguna->status === 'aktif' ? 'nonaktif' : 'aktif';
+            $pengguna->status = $newStatus;
+            $pengguna->save();
 
+            // Log activity (optional)
+            \Log::info("Status pengguna {$pengguna->username} diubah menjadi {$newStatus} oleh admin: " . auth()->user()->username);
 
-    $pengguna->status = $pengguna->status === 'aktif' ? 'nonaktif' : 'aktif';
-    $pengguna->save();
+            return response()->json([
+                'success' => true,
+                'status' => $pengguna->status,
+                'label'  => $pengguna->status === 'aktif' ? 'Aktif' : 'Nonaktif',
+                'message' => "Status pengguna {$pengguna->username} berhasil diubah menjadi {$newStatus}"
+            ]);
 
-    return response()->json([
-        'status' => $pengguna->status,
-        'label'  => $pengguna->status === 'aktif' ? 'Aktif' : 'Nonaktif',
-    ]);
-}
+        } catch (\Exception $e) {
+            \Log::error("Error toggle status: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status pengguna'
+            ], 500);
+        }
+    }
 }
