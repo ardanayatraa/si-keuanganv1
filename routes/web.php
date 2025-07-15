@@ -94,7 +94,7 @@ Route::prefix('auth/admin')
          Route::get('dashboard', [AdminController::class,'dashboard'])
               ->name('dashboard');
 
-                   Route::patch('/pengguna/{pengguna}/toggle-status', [PenggunaController::class, 'toggleStatus'])
+                   Route::get('/pengguna/{pengguna}/toggle-status', [PenggunaController::class, 'toggleStatus'])
         ->name('pengguna.toggleStatus');
          // Resource CRUD untuk Pengguna
          Route::resource('pengguna', PenggunaController::class)
