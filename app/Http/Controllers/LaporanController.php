@@ -96,9 +96,18 @@ class LaporanController extends Controller
 
         // Tentukan start/end & label
         if ($type === 'minggu') {
-            $sel   = Carbon::parse($request->input('filter_date'));
-            $start = $sel->startOfWeek()->startOfDay();
-            $end   = $sel->endOfWeek()->endOfDay();
+            $sel = Carbon::parse($request->input('filter_date'));
+
+            // Pastikan menggunakan timezone yang benar
+            $sel->setTimezone(config('app.timezone', 'Asia/Jakarta'));
+
+            // Hitung start dan end minggu (Senin-Minggu)
+            $start = $sel->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
+            $end = $sel->copy()->endOfWeek(Carbon::SUNDAY)->endOfDay();
+
+            // Untuk debugging - bisa dihapus nanti
+            // \Log::info("Selected date: " . $sel->format('Y-m-d') . ", Start: " . $start->format('Y-m-d') . ", End: " . $end->format('Y-m-d'));
+
             $label = 'Minggu ' . $start->format('d M Y') . ' – ' . $end->format('d M Y');
         }
         elseif ($type === 'bulan') {
