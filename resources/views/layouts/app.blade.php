@@ -103,6 +103,24 @@
                             ],
                         ];
 
+                        // Asset dropdown items
+                        $assetItems = [
+                            [
+                                'name' => 'Daftar Aset',
+                                'icon' =>
+                                    'M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125',
+                                'route' => 'aset.index',
+                                'pattern' => 'aset.index',
+                            ],
+                            [
+                                'name' => 'Total Kekayaan',
+                                'icon' =>
+                                    'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                                'route' => 'aset.total-wealth',
+                                'pattern' => 'aset.total-wealth',
+                            ],
+                        ];
+
                         // Transaction dropdown items
                         $transactionItems = [
                             [
@@ -134,8 +152,21 @@
                             ],
                         ];
 
+                        // Check if any asset routes are active
+                        $assetRoutes = ['aset*'];
+                        $isAssetActive = collect($assetRoutes)->some(function ($pattern) {
+                            return request()->routeIs($pattern);
+                        });
+
                         // Add remaining menu items
                         $remainingItems = [
+                            [
+                                'name' => 'Wishlist',
+                                'icon' =>
+                                    'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z',
+                                'route' => 'wishlist.index',
+                                'pattern' => 'wishlist*',
+                            ],
                             [
                                 'name' => 'Transfer',
                                 'icon' => 'M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5',
@@ -223,6 +254,61 @@
                                         @endif
                                         <svg class="mr-3 h-4 w-4 flex-shrink-0 {{ $isActive ? 'text-yellow-600' : 'text-gray-400' }}"
                                             fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="{{ $item['icon'] }}" />
+                                        </svg>
+                                        <span>{{ $item['name'] }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </li>
+
+                        <!-- Aset Dropdown -->
+                        <li x-data="{ open: {{ $isAssetActive ? 'true' : 'false' }} }">
+                            <button @click="open = !open"
+                                class="relative flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
+                    {{ $isAssetActive ? 'bg-yellow-50 text-yellow-600' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}"
+                                aria-expanded="false">
+                                @if ($isAssetActive)
+                                    <span class="absolute right-0 top-0 bottom-0 w-1 bg-yellow-500 rounded-l-lg"></span>
+                                @endif
+                                <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ $isAssetActive ? 'text-yellow-600' : 'text-gray-400' }}"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                                </svg>
+                                <span class="flex-1 text-left">Aset</span>
+                                <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7">
+                                    </path>
+                                </svg>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95" class="mt-1 space-y-1">
+                                @foreach ($assetItems as $item)
+                                    @php
+                                        $isActive = request()->routeIs($item['pattern']);
+                                        $url = route($item['route']);
+                                    @endphp
+                                    <a href="{{ $url }}"
+                                        class="relative flex items-center pl-8 pr-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
+                        {{ $isActive ? 'bg-yellow-50 text-yellow-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}"
+                                        aria-current="{{ $isActive ? 'page' : 'false' }}">
+                                        @if ($isActive)
+                                            <span
+                                                class="absolute right-0 top-0 bottom-0 w-1 bg-yellow-500 rounded-l-lg"></span>
+                                        @endif
+                                        <svg class="mr-3 h-4 w-4 flex-shrink-0 {{ $isActive ? 'text-yellow-600' : 'text-gray-400' }}"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="{{ $item['icon'] }}" />
                                         </svg>

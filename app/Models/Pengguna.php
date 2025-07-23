@@ -102,4 +102,14 @@ class Pengguna extends Authenticatable
     {
         return $this->hasMany(Laporan::class, 'id_pengguna');
     }
+
+    public function aset()
+    {
+        return $this->hasMany(Aset::class, 'id_pengguna', 'id_pengguna');
+    }
+
+    public function wishlist()
+    {
+        return $this->hasMany(Wishlist::class, 'id_pengguna', 'id_pengguna');
+    }
 }

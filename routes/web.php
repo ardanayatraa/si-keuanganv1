@@ -18,6 +18,9 @@ use App\Http\Controllers\PiutangController;
 use App\Http\Controllers\PembayaranPiutangController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AsetController;
+use App\Http\Controllers\AsetHistoryController;
+use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Auth\CustomAuthenticatedSessionController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\GoogleDriveController;
@@ -146,6 +149,9 @@ Route::middleware([
          ->name('pengguna.profile.edit');
     Route::put('/profile', [PenggunaController::class,'updateProfile'])
          ->name('pengguna.profile.update');
+    // Aset routes
+    Route::get('/aset/total-wealth', [AsetController::class, 'totalWealth'])->name('aset.total-wealth');
+
     // Resource routes
     Route::resources([
         'kategori-pemasukan'   => KategoriPemasukanController::class,
@@ -159,12 +165,27 @@ Route::middleware([
         'piutang'              => PiutangController::class,
         'laporan'              => LaporanController::class,
         'admin'                => AdminController::class,
+        'aset'                 => AsetController::class,
+        'wishlist'             => WishlistController::class,
     ]);
+    Route::get('/aset/{aset}/toggle-status', [AsetController::class, 'toggleStatus'])->name('aset.toggle-status');
+
+    // We don't need to clear the route cache here as it will be done automatically
+    // when the application is restarted
+
+    // Aset History routes
+    Route::prefix('aset/{aset}')->name('aset.')->group(function () {
+        Route::resource('history', AsetHistoryController::class);
+    });
 
 
 
     Route::post('/laporan/generate', [LaporanController::class, 'generate'])->name('laporan.generate');
- Route::get('/print/{laporan}', [LaporanController::class, 'print'])->name('laporan.print');
+    Route::get('/print/{laporan}', [LaporanController::class, 'print'])->name('laporan.print');
+
+    // Wishlist routes
+    Route::get('/wishlist/{wishlist}/toggle-status', [WishlistController::class, 'toggleStatus'])->name('wishlist.toggle-status');
+    Route::post('/wishlist/{wishlist}/update-progress', [WishlistController::class, 'updateProgress'])->name('wishlist.update-progress');
     // 🔀 Dynamic kategori route
     Route::prefix('kategori')->name('kategori.')->group(function () {
         Route::get('/', function (Request $request) {
