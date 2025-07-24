@@ -14,14 +14,16 @@ class UtangReminderMail extends Mailable
     use Queueable, SerializesModels;
 
     public Utang $utang;
+      public $label;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Utang $utang)
-    {
-        $this->utang = $utang;
-    }
+    public function __construct(Utang $utang, $label)
+{
+    $this->utang = $utang;
+    $this->label = $label;
+}
 
     /**
      * Get the message envelope.
@@ -41,9 +43,11 @@ class UtangReminderMail extends Mailable
         return new Content(
             markdown: 'emails.reminder.utang',
             with: [
-                'nama'     => $this->utang->pengguna->username,
-                'jumlah'   => $this->utang->jumlah,
-                'due_date' => $this->utang->tanggal_jatuh_tempo->format('d M Y'),
+               'nama'      => $this->utang->pengguna->username,
+            'jumlah'    => $this->utang->jumlah,
+            'due_date'  => $this->utang->tanggal_jatuh_tempo->format('d-m-Y'),
+            'deskripsi' => $this->utang->deskripsi,
+            'label'     => $this->label,
             ],
         );
     }

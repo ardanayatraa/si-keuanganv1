@@ -50,6 +50,7 @@ class PiutangController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'nama'                => 'required|string|max:50',
             'id_rekening'         => 'required|exists:rekening,id_rekening',
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
@@ -66,6 +67,7 @@ class PiutangController extends Controller
             );
             // 2) Catat pengeluaran
             Pengeluaran::create([
+
                 'id_pengguna'=>$data['id_pengguna'],
                 'id_rekening'=>$data['id_rekening'],
                 'jumlah'=>$data['jumlah'],
@@ -77,6 +79,7 @@ class PiutangController extends Controller
             Rekening::where('id_rekening',$data['id_rekening'])->decrement('saldo',$data['jumlah']);
             // 4) Buat entri piutang
             Piutang::create([
+                'nama'                => $data['nama'],
                 'id_pengguna'=>$data['id_pengguna'],
                 'id_rekening'=>$data['id_rekening'],
                 'id_pemasukan'=>null,
@@ -126,6 +129,7 @@ class PiutangController extends Controller
             ->where('id_pengguna',Auth::user()->id_pengguna)
             ->firstOrFail();
 
+
         $data = $request->validate([
             'id_rekening'         => 'required|exists:rekening,id_rekening',
             'jumlah'              => 'required|numeric|min:0.01',
@@ -141,6 +145,7 @@ class PiutangController extends Controller
             Pengeluaran::where('id_pengeluaran',$piutang->id_pengeluaran)->delete();
             // update piutang
             $piutang->update([
+                'nama'                => $data['nama'],
                 'id_rekening'=>$data['id_rekening'],
                 'jumlah'=>$data['jumlah'],
                 'sisa_piutang'=>$data['jumlah'],

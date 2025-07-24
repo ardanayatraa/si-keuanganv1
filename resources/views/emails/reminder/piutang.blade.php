@@ -22,8 +22,8 @@
                     <tr>
                         <td style="padding:30px;color:#555;line-height:1.6;">
                             <p style="font-size:16px;margin:0 0 10px;">Hai <strong>{{ $nama }}</strong>,</p>
-                            <p style="font-size:16px;margin:0 0 20px;">
-                                Berikut detail piutang Anda yang akan jatuh tempo dalam 3 hari:
+                            <p style="font-size:16px;margin:0 0 10px;">
+                                Berikut detail piutang Anda yang akan jatuh tempo dalam {{ $label }}:
                             </p>
                             <table cellpadding="0" cellspacing="0" width="100%"
                                 style="border:1px solid #ddd;border-collapse:collapse;">

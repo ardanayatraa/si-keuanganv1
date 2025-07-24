@@ -14,13 +14,15 @@ class PiutangReminderMail extends Mailable
     use Queueable, SerializesModels;
 
     public Piutang $piutang;
+    public $label;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Piutang $piutang)
+    public function __construct(Piutang $piutang, $label)
     {
         $this->piutang = $piutang;
+        $this->label = $label;
     }
 
     /**
@@ -41,9 +43,11 @@ class PiutangReminderMail extends Mailable
         return new Content(
             markdown: 'emails.reminder.piutang',
             with: [
-                'nama'     => $this->piutang->pengguna->username,
-                'jumlah'   => $this->piutang->jumlah,
-                'due_date' => $this->piutang->tanggal_jatuh_tempo->format('d M Y'),
+                'nama'      => $this->piutang->pengguna->username,
+                'jumlah'    => $this->piutang->jumlah,
+                'due_date'  => $this->piutang->tanggal_jatuh_tempo->format('d-m-Y'),
+                'deskripsi' => $this->piutang->deskripsi,
+                'label'     => $this->label,
             ],
         );
     }

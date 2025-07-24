@@ -47,6 +47,7 @@ class UtangController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'nama'                => 'required|string|max:50',
             'id_rekening'         => 'required|exists:rekening,id_rekening',
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
@@ -59,6 +60,7 @@ class UtangController extends Controller
         DB::transaction(function() use ($data) {
             // 1) Buat utang
             $utang = Utang::create([
+                'nama'                => $data['nama'],
                 'id_pengguna'         => $data['id_pengguna'],
                 'id_rekening'         => $data['id_rekening'],
                 'jumlah'              => $data['jumlah'],
@@ -118,6 +120,7 @@ class UtangController extends Controller
     public function update(Request $request, $id)
     {
         $utang = Utang::where('id_utang', $id)
+
             ->where('id_pengguna', Auth::user()->id_pengguna)
             ->firstOrFail();
 
@@ -128,6 +131,7 @@ class UtangController extends Controller
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
             'deskripsi'           => 'nullable|string',
         ]);
+
 
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
@@ -143,6 +147,7 @@ class UtangController extends Controller
 
             // update utang
             $utang->update([
+                'nama'                => $data['nama'],
                 'id_rekening'         => $data['id_rekening'],
                 'jumlah'              => $data['jumlah'],
                 'sisa_hutang'         => $data['jumlah'],
