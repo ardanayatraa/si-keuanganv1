@@ -8,6 +8,18 @@
             <form action="{{ route('piutang.store') }}" method="POST">
                 @csrf
                 <div class="space-y-4">
+                    {{-- Nama --}}
+                    <div>
+                        <label for="nama" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Nama
+                        </label>
+                        <input id="nama" name="nama" type="text" value="{{ old('nama') }}"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white" />
+                        @error('nama')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     {{-- Rekening --}}
                     <div>
                         <label for="id_rekening" class="block text-sm font-medium text-gray-700 dark:text-gray-300">

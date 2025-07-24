@@ -55,6 +55,14 @@ class PengeluaranController extends Controller
 
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
+        // Check if rekening has sufficient balance
+        $rekening = Rekening::where('id_rekening', $data['id_rekening'])->first();
+        if ($rekening->saldo < $data['jumlah']) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['jumlah' => 'Saldo rekening tidak mencukupi untuk melakukan pengeluaran ini.']);
+        }
+
         if ($request->hasFile('bukti_transaksi')) {
             $data['bukti_transaksi'] = $request->file('bukti_transaksi')
                                              ->store('bukti_pengeluaran', 'public');
@@ -136,6 +144,20 @@ class PengeluaranController extends Controller
             'deskripsi'       => 'nullable|string',
             'bukti_transaksi' => 'nullable|image|max:2048',
         ]);
+
+        // Check if rekening has sufficient balance (only if different rekening or higher amount)
+        if ($data['id_rekening'] != $pengeluaran->id_rekening || $data['jumlah'] > $pengeluaran->jumlah) {
+            $additionalAmount = $data['id_rekening'] == $pengeluaran->id_rekening ?
+                                $data['jumlah'] - $pengeluaran->jumlah :
+                                $data['jumlah'];
+
+            $rekening = Rekening::where('id_rekening', $data['id_rekening'])->first();
+            if ($rekening->saldo < $additionalAmount) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['jumlah' => 'Saldo rekening tidak mencukupi untuk melakukan pengeluaran ini.']);
+            }
+        }
 
         if ($request->hasFile('bukti_transaksi')) {
             if ($pengeluaran->bukti_transaksi) {

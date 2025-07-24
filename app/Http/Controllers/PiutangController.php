@@ -131,6 +131,7 @@ class PiutangController extends Controller
 
 
         $data = $request->validate([
+            'nama'                => 'required|string|max:50',
             'id_rekening'         => 'required|exists:rekening,id_rekening',
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',

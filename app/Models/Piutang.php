@@ -17,6 +17,7 @@ class Piutang extends Model
         'id_pengguna',
         'id_rekening',
         'id_pemasukan',
+        'nama',
         'jumlah',
         'sisa_piutang',
         'tanggal_pinjam',

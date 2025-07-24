@@ -17,6 +17,7 @@ class Utang extends Model
     protected $fillable = [
         'id_pengguna',
         'id_rekening',
+        'nama',
         'jumlah',
         'sisa_hutang',
         'tanggal_pinjam',
