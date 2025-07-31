@@ -128,7 +128,7 @@ class PiutangController extends Controller
         $piutang = Piutang::where('id_piutang',$id)
             ->where('id_pengguna',Auth::user()->id_pengguna)
             ->firstOrFail();
-dd($piutang);
+
 
         $data = $request->validate([
             'nama'                => 'required|string|max:50',
@@ -143,8 +143,7 @@ dd($piutang);
         DB::transaction(function() use ($data,$piutang) {
             // refund & hapus pengeluaran lama
             Rekening::where('id_rekening',$piutang->id_rekening)->increment('saldo',$piutang->jumlah);
-            dd($piutang->id_pengeluaran);
-            Pengeluaran::where('id_pengeluaran',$piutang->id_pengeluaran)->delete();
+            Pengeluaran::where('deskripsi', 'like', '%Pinjamkan uang (Piutang)%')->delete();
             // update piutang
             $piutang->update([
                 'nama'                => $data['nama'],
