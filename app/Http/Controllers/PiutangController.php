@@ -143,6 +143,7 @@ class PiutangController extends Controller
         DB::transaction(function() use ($data,$piutang) {
             // refund & hapus pengeluaran lama
             Rekening::where('id_rekening',$piutang->id_rekening)->increment('saldo',$piutang->jumlah);
+            dd($piutang->id_pengeluaran);
             Pengeluaran::where('id_pengeluaran',$piutang->id_pengeluaran)->delete();
             // update piutang
             $piutang->update([
