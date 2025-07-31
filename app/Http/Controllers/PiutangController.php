@@ -190,7 +190,7 @@ class PiutangController extends Controller
         DB::transaction(function() use ($piutang) {
             // refund saldo & hapus pengeluaran
             Rekening::where('id_rekening',$piutang->id_rekening)->increment('saldo',$piutang->jumlah);
-            Pengeluaran::where('deskripsi', 'like', '%Pinjamkan uang (Piutang)%')->delete();
+            Pengeluaran::where('deskripsi', 'like', '%Terima Piutang (ID ' . $piutang->id_piutang . ')%')->delete();
             $piutang->delete();
         });
         return redirect()->route('piutang.index')
