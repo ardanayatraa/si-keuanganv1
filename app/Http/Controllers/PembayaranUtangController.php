@@ -142,80 +142,83 @@ class PembayaranUtangController extends Controller
      * Proses update pembayaran utang.
      */
     public function update(Request $request, $id)
-    {
-        $p = PembayaranUtang::where('id_pembayaran_utang', $id)
-            ->whereHas('utang', fn($q) => $q->where('id_pengguna', Auth::id()))
-            ->firstOrFail();
+{
+    $p = PembayaranUtang::where('id_pembayaran_utang', $id)
+        ->whereHas('utang', fn($q) => $q->where('id_pengguna', Auth::id()))
+        ->firstOrFail();
 
-        $data = $request->validate([
-            'id_utang'           => 'required|exists:utang,id_utang',
-            'id_rekening'        => 'required|exists:rekening,id_rekening',
-            'jumlah_dibayar'     => 'required|numeric|min:0.01',
-            'tanggal_pembayaran' => 'required|date',
-            'metode_pembayaran'  => 'nullable|string',
-            'deskripsi'          => 'nullable|string',
+    $data = $request->validate([
+        'id_utang'           => 'required|exists:utang,id_utang',
+        'id_rekening'        => 'required|exists:rekening,id_rekening',
+        'jumlah_dibayar'     => 'required|numeric|min:0.01',
+        'tanggal_pembayaran' => 'required|date',
+        'metode_pembayaran'  => 'nullable|string',
+        'deskripsi'          => 'nullable|string',
+    ]);
+
+    DB::transaction(function() use ($data, $p) {
+        // ROLLBACK UTANG LAMA
+        $oldUtang = $p->utang;
+        $oldUtang->increment('sisa_hutang', $p->jumlah_dibayar);
+
+        if ($oldUtang->status === 'lunas' && $oldUtang->sisa_hutang > 0) {
+            $oldUtang->update(['status' => 'aktif']);
+        }
+
+        // ROLLBACK PENGELUARAN LAMA
+        $oldPeng = $p->pengeluaran;
+        Rekening::find($oldPeng->id_rekening)->increment('saldo', $oldPeng->jumlah);
+
+        // PASTIKAN KATEGORI
+        $kat = KategoriPengeluaran::firstOrCreate(
+            ['id_pengguna' => Auth::id(), 'nama_kategori' => 'Pembayaran Utang'],
+            ['deskripsi' => 'Pembayaran utang', 'icon' => 'fas fa-credit-card']
+        );
+
+        // BUAT PENGELUARAN BARU
+        $newPeng = Pengeluaran::create([
+            'id_pengguna' => Auth::id(),
+            'id_rekening' => $data['id_rekening'],
+            'jumlah'      => $data['jumlah_dibayar'],
+            'tanggal'     => $data['tanggal_pembayaran'],
+            'id_kategori' => $kat->id_kategori_pengeluaran,
+            'deskripsi'   => 'Bayar Utang ID ' . $data['id_utang'],
         ]);
 
-        DB::transaction(function() use ($data, $p) {
-            // Rollback utang & mutasi lama
-            $oldUtang   = $p->utang;
-            $oldAmount  = $p->jumlah_dibayar;
-            $oldUtang->increment('sisa_hutang', $oldAmount);
+        // KURANGI SALDO REKENING BARU
+        Rekening::find($data['id_rekening'])->decrement('saldo', $data['jumlah_dibayar']);
 
-            // Update status kembali ke aktif jika sebelumnya lunas
-            if ($oldUtang->status == 'lunas' && $oldUtang->sisa_hutang > 0) {
-                $oldUtang->update(['status' => 'aktif']);
-            }
+        // UPDATE PEMBAYARAN
+        $p->update([
+            'id_utang'           => $data['id_utang'],
+            'id_pengeluaran'     => $newPeng->id_pengeluaran,
+            'id_rekening'        => $data['id_rekening'],
+            'jumlah_dibayar'     => $data['jumlah_dibayar'],
+            'tanggal_pembayaran' => $data['tanggal_pembayaran'],
+            'metode_pembayaran'  => $data['metode_pembayaran'] ?? null,
+            'deskripsi'          => $data['deskripsi'] ?? null,
+        ]);
 
-            $oldPeng = $p->pengeluaran;
-            Rekening::find($oldPeng->id_rekening)
-                   ->increment('saldo', $oldPeng->jumlah);
-            $oldPeng->delete();
+        // Delete old expense AFTER updating payment reference
+        $oldPeng->delete();
 
-            // Pastikan kategori
-            $kat = KategoriPengeluaran::firstOrCreate(
-                ['id_pengguna' => Auth::id(), 'nama_kategori' => 'Pembayaran Utang'],
-                ['deskripsi'  => 'Pembayaran utang', 'icon' => 'fas fa-credit-card']
-            );
+        // KURANGI UTANG BARU
+        $newUtang = Utang::where('id_utang', $data['id_utang'])
+                         ->where('id_pengguna', Auth::id())
+                         ->firstOrFail();
 
-            // Buat pengeluaran baru
-            $newPeng = Pengeluaran::create([
-                'id_pengguna' => $p->utang->id_pengguna,
-                'id_rekening' => $data['id_rekening'],
-                'jumlah'      => $data['jumlah_dibayar'],
-                'tanggal'     => $data['tanggal_pembayaran'],
-                'id_kategori' => $kat->id_kategori_pengeluaran,
-                'deskripsi'   => 'Bayar Utang ID ' . $p->id_utang,
-            ]);
+        $newUtang->decrement('sisa_hutang', $data['jumlah_dibayar']);
 
-            Rekening::find($data['id_rekening'])
-                   ->decrement('saldo', $data['jumlah_dibayar']);
+        if ($newUtang->sisa_hutang <= 0) {
+            $newUtang->update(['status' => 'lunas']);
+        }
+    });
 
-            // Update pembayaran
-            $p->update([
-                'id_utang'           => $data['id_utang'],
-                'id_pengeluaran'     => $newPeng->id_pengeluaran,
-                'id_rekening'        => $data['id_rekening'],
-                'jumlah_dibayar'     => $data['jumlah_dibayar'],
-                'tanggal_pembayaran' => $data['tanggal_pembayaran'],
-                'metode_pembayaran'  => $data['metode_pembayaran'] ?? null,
-                'deskripsi'          => $data['deskripsi'] ?? null,
-            ]);
+    return redirect()
+        ->route('utang.pembayaran.index')
+        ->with('success', 'Pembayaran utang berhasil diperbarui.');
+}
 
-            // Kurangi utang baru
-            $newUtang = $p->utang;
-            $newUtang->decrement('sisa_hutang', $data['jumlah_dibayar']);
-
-            // Update status jika sudah lunas
-            if ($newUtang->sisa_hutang <= 0) {
-                $newUtang->update(['status' => 'lunas']);
-            }
-        });
-
-        return redirect()
-            ->route('utang.pembayaran.index')
-            ->with('success', 'Pembayaran utang berhasil diperbarui.');
-    }
 
     /**
      * Hapus pembayaran utang.
