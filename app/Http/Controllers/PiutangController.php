@@ -60,25 +60,13 @@ class PiutangController extends Controller
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
         DB::transaction(function() use ($data) {
-            // 1) Pastikan kategori "Piutang"
             $kategori = KategoriPengeluaran::firstOrCreate(
                 ['id_pengguna'=>$data['id_pengguna'],'nama_kategori'=>'Piutang'],
                 ['deskripsi'=>'Kategori untuk pengeluaran pinjaman (Piutang)','icon'=>'fas fa-handshake']
             );
-            // 2) Catat pengeluaran
-            Pengeluaran::create([
 
-                'id_pengguna'=>$data['id_pengguna'],
-                'id_rekening'=>$data['id_rekening'],
-                'jumlah'=>$data['jumlah'],
-                'tanggal'=>$data['tanggal_pinjam'],
-                'id_kategori'=>$kategori->id_kategori_pengeluaran,
-                'deskripsi'=>'Pinjamkan uang (Piutang)'
-            ]);
-            // 3) Kurangi saldo
             Rekening::where('id_rekening',$data['id_rekening'])->decrement('saldo',$data['jumlah']);
-            // 4) Buat entri piutang
-            Piutang::create([
+            $piutang=Piutang::create([
                 'nama'                => $data['nama'],
                 'id_pengguna'=>$data['id_pengguna'],
                 'id_rekening'=>$data['id_rekening'],
@@ -89,6 +77,16 @@ class PiutangController extends Controller
                 'tanggal_jatuh_tempo'=>$data['tanggal_jatuh_tempo'],
                 'deskripsi'=>$data['deskripsi'] ?? null,
                 'status'=>'belum lunas',
+            ]);
+
+            Pengeluaran::create([
+
+                'id_pengguna'=>$data['id_pengguna'],
+                'id_rekening'=>$data['id_rekening'],
+                'jumlah'=>$data['jumlah'],
+                'tanggal'=>$data['tanggal_pinjam'],
+                'id_kategori'=>$kategori->id_kategori_pengeluaran,
+                'deskripsi'   => 'Terima Piutang (ID ' . $piutang->id_piutang . ')',
             ]);
         });
 
@@ -143,7 +141,7 @@ class PiutangController extends Controller
         DB::transaction(function() use ($data,$piutang) {
             // refund & hapus pengeluaran lama
             Rekening::where('id_rekening',$piutang->id_rekening)->increment('saldo',$piutang->jumlah);
-            Pengeluaran::where('deskripsi', 'like', '%Pinjamkan uang (Piutang)%')->delete();
+            Pengeluaran::where('deskripsi', 'like', '%Terima Piutang (ID ' . $piutang->id_piutang . ')%')->delete();
             // update piutang
             $piutang->update([
                 'nama'                => $data['nama'],
@@ -167,7 +165,7 @@ class PiutangController extends Controller
             'jumlah'=>$data['jumlah'],
             'tanggal'=>$data['tanggal_pinjam'],
             'id_kategori'=>$kategori->id_kategori_pengeluaran,
-            'deskripsi'=>'Pinjamkan uang (Piutang)'
+           'deskripsi'   => 'Terima Piutang (ID ' . $piutang->id_piutang . ')',
         ]);
 
         // Update piutang dengan pengeluaran yang baru dibuat
@@ -192,7 +190,7 @@ class PiutangController extends Controller
         DB::transaction(function() use ($piutang) {
             // refund saldo & hapus pengeluaran
             Rekening::where('id_rekening',$piutang->id_rekening)->increment('saldo',$piutang->jumlah);
-            Pengeluaran::where('id_pengeluaran',$piutang->id_pengeluaran)->delete();
+            Pengeluaran::where('deskripsi', 'like', '%Pinjamkan uang (Piutang)%')->delete();
             $piutang->delete();
         });
         return redirect()->route('piutang.index')
