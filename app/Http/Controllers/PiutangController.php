@@ -128,7 +128,7 @@ class PiutangController extends Controller
         $piutang = Piutang::where('id_piutang',$id)
             ->where('id_pengguna',Auth::user()->id_pengguna)
             ->firstOrFail();
-
+dd($piutang);
 
         $data = $request->validate([
             'nama'                => 'required|string|max:50',
