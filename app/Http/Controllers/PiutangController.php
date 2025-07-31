@@ -161,14 +161,19 @@ class PiutangController extends Controller
                 ['id_pengguna'=>$data['id_pengguna'],'nama_kategori'=>'Piutang'],
                 ['deskripsi'=>'Kategori untuk pengeluaran pinjaman (Piutang)','icon'=>'fas fa-handshake']
             );
-            Pengeluaran::create([
-                'id_pengguna'=>$data['id_pengguna'],
-                'id_rekening'=>$data['id_rekening'],
-                'jumlah'=>$data['jumlah'],
-                'tanggal'=>$data['tanggal_pinjam'],
-                'id_kategori'=>$kategori->id_kategori_pengeluaran,
-                'deskripsi'=>'Pinjamkan uang (Piutang)'
-            ]);
+         $pengeluaranBaru = Pengeluaran::create([
+            'id_pengguna'=>$data['id_pengguna'],
+            'id_rekening'=>$data['id_rekening'],
+            'jumlah'=>$data['jumlah'],
+            'tanggal'=>$data['tanggal_pinjam'],
+            'id_kategori'=>$kategori->id_kategori_pengeluaran,
+            'deskripsi'=>'Pinjamkan uang (Piutang)'
+        ]);
+
+        // Update piutang dengan pengeluaran yang baru dibuat
+        $piutang->update([
+            'id_pengeluaran' => $pengeluaranBaru->id_pengeluaran,
+        ]);
             Rekening::where('id_rekening',$data['id_rekening'])->decrement('saldo',$data['jumlah']);
         });
 
