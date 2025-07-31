@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pemasukan;
 use App\Models\Rekening;
+use App\Models\KategoriPemasukan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class PemasukanController extends Controller
         $start = $request->input('start_date');
         $end   = $request->input('end_date');
 
-        $query = Pemasukan::with('kategori', 'rekening')
+        $query = Pemasukan::with(['kategori', 'rekening'])
             ->where('id_pengguna', Auth::user()->id_pengguna);
 
         if ($start) {
@@ -37,7 +38,9 @@ class PemasukanController extends Controller
     public function create()
     {
         $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
-        return view('pemasukan.create', compact('rekenings'));
+        $kategoris = KategoriPemasukan::where('id_pengguna', Auth::user()->id_pengguna)->get();
+
+        return view('pemasukan.create', compact('rekenings', 'kategoris'));
     }
 
     public function store(Request $request)
@@ -46,16 +49,17 @@ class PemasukanController extends Controller
             'id_rekening'     => 'required|string|exists:rekening,id_rekening',
             'jumlah'          => 'required|numeric|min:0.01',
             'tanggal'         => 'required|date',
-            'id_kategori'     => 'required|string|max:50',
+            'id_kategori'     => 'required|string|exists:kategori_pemasukan,id_kategori_pemasukan',
             'deskripsi'       => 'nullable|string',
             'bukti_transaksi' => 'nullable|image|max:2048',
         ]);
 
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
+        // Simpan file bukti transaksi jika ada
         if ($request->hasFile('bukti_transaksi')) {
             $data['bukti_transaksi'] = $request->file('bukti_transaksi')
-                                             ->store('bukti_transaksi', 'public');
+                                             ->store('bukti_pemasukan', 'public');
         }
 
         DB::transaction(function() use ($data) {
@@ -70,32 +74,37 @@ class PemasukanController extends Controller
 
     public function show($id)
     {
-        $pemasukan = Pemasukan::with('kategori', 'rekening')
+        $pemasukan = Pemasukan::with(['kategori', 'rekening'])
+            ->where('id_pemasukan', $id)
             ->where('id_pengguna', Auth::user()->id_pengguna)
-            ->findOrFail($id);
+            ->firstOrFail();
 
         return view('pemasukan.show', compact('pemasukan'));
     }
 
     public function edit($id)
     {
-        $pemasukan = Pemasukan::where('id_pengguna', Auth::user()->id_pengguna)
-            ->findOrFail($id);
-        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
+        $pemasukan = Pemasukan::where('id_pemasukan', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
 
-        return view('pemasukan.edit', compact('pemasukan', 'rekenings'));
+        $rekenings = Rekening::where('id_pengguna', Auth::user()->id_pengguna)->get();
+        $kategoris = KategoriPemasukan::where('id_pengguna', Auth::user()->id_pengguna)->get();
+
+        return view('pemasukan.edit', compact('pemasukan', 'rekenings', 'kategoris'));
     }
 
     public function update(Request $request, $id)
     {
-        $pemasukan = Pemasukan::where('id_pengguna', Auth::user()->id_pengguna)
-            ->findOrFail($id);
+        $pemasukan = Pemasukan::where('id_pemasukan', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
 
         $data = $request->validate([
             'id_rekening'     => 'required|string|exists:rekening,id_rekening',
             'jumlah'          => 'required|numeric|min:0.01',
             'tanggal'         => 'required|date',
-            'id_kategori'     => 'required|string|max:50',
+            'id_kategori'     => 'required|string|exists:kategori_pemasukan,id_kategori_pemasukan',
             'deskripsi'       => 'nullable|string',
             'bukti_transaksi' => 'nullable|image|max:2048',
         ]);
@@ -105,7 +114,7 @@ class PemasukanController extends Controller
                 Storage::disk('public')->delete($pemasukan->bukti_transaksi);
             }
             $data['bukti_transaksi'] = $request->file('bukti_transaksi')
-                                             ->store('bukti_transaksi', 'public');
+                                             ->store('bukti_pemasukan', 'public');
         }
 
         DB::transaction(function() use ($data, $pemasukan) {
@@ -127,8 +136,9 @@ class PemasukanController extends Controller
 
     public function destroy($id)
     {
-        $pemasukan = Pemasukan::where('id_pengguna', Auth::user()->id_pengguna)
-            ->findOrFail($id);
+        $pemasukan = Pemasukan::where('id_pemasukan', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
 
         DB::transaction(function() use ($pemasukan) {
             // kurangi saldo

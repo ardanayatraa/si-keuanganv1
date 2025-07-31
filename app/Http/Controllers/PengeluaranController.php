@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PengeluaranController extends Controller
 {
@@ -55,7 +57,7 @@ class PengeluaranController extends Controller
 
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
-        // Check if rekening has sufficient balance
+        // Ambil data rekening
         $rekening = Rekening::where('id_rekening', $data['id_rekening'])->first();
         if ($rekening->saldo < $data['jumlah']) {
             return redirect()->back()
@@ -63,12 +65,13 @@ class PengeluaranController extends Controller
                 ->withErrors(['jumlah' => 'Saldo rekening tidak mencukupi untuk melakukan pengeluaran ini.']);
         }
 
+        // Simpan file bukti transaksi jika ada
         if ($request->hasFile('bukti_transaksi')) {
             $data['bukti_transaksi'] = $request->file('bukti_transaksi')
-                                             ->store('bukti_pengeluaran', 'public');
+                                              ->store('bukti_pengeluaran', 'public');
         }
 
-        // Cek anggaran dan prepare warning
+        // Cek anggaran
         $warning = null;
         $anggaran = Anggaran::where('id_pengguna', $data['id_pengguna'])
             ->where('id_kategori', $data['id_kategori'])
@@ -93,12 +96,14 @@ class PengeluaranController extends Controller
             }
         }
 
-        DB::transaction(function() use ($data) {
+        // Simpan pengeluaran & update saldo dalam transaksi DB
+        DB::transaction(function () use ($data) {
             Pengeluaran::create($data);
             Rekening::where('id_rekening', $data['id_rekening'])
-                   ->decrement('saldo', $data['jumlah']);
+                ->decrement('saldo', $data['jumlah']);
         });
 
+        // Kirim warning ke session jika ada
         if ($warning) {
             session()->flash('warning', $warning);
         }
@@ -219,19 +224,44 @@ class PengeluaranController extends Controller
             ->where('id_pengguna', Auth::user()->id_pengguna)
             ->firstOrFail();
 
-        DB::transaction(function() use ($pengeluaran) {
-            // restore saldo
-            Rekening::where('id_rekening', $pengeluaran->id_rekening)
-                   ->increment('saldo', $pengeluaran->jumlah);
+        try {
+            DB::transaction(function() use ($pengeluaran) {
+                // restore saldo
+                Rekening::where('id_rekening', $pengeluaran->id_rekening)
+                       ->increment('saldo', $pengeluaran->jumlah);
 
-            if ($pengeluaran->bukti_transaksi) {
-                Storage::disk('public')->delete($pengeluaran->bukti_transaksi);
-            }
+                // hapus file bukti transaksi jika ada
+                if ($pengeluaran->bukti_transaksi && Storage::disk('public')->exists($pengeluaran->bukti_transaksi)) {
+                    Storage::disk('public')->delete($pengeluaran->bukti_transaksi);
+                    Log::info('File bukti transaksi dihapus: ' . $pengeluaran->bukti_transaksi);
+                }
 
-            $pengeluaran->delete();
-        });
+                $pengeluaran->delete();
+                Log::info('Pengeluaran berhasil dihapus ID: ' . $pengeluaran->id_pengeluaran);
+            });
+        } catch (\Exception $e) {
+            Log::error('Error saat menghapus pengeluaran: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'Gagal menghapus pengeluaran: ' . $e->getMessage()]);
+        }
 
         return redirect()->route('pengeluaran.index')
                          ->with('success', 'Pengeluaran berhasil dihapus.');
+    }
+
+    /**
+     * Method helper untuk menampilkan bukti transaksi
+     */
+    public function showBuktiTransaksi($id)
+    {
+        $pengeluaran = Pengeluaran::where('id_pengeluaran', $id)
+            ->where('id_pengguna', Auth::user()->id_pengguna)
+            ->firstOrFail();
+
+        if (!$pengeluaran->bukti_transaksi || !Storage::disk('public')->exists($pengeluaran->bukti_transaksi)) {
+            abort(404, 'File bukti transaksi tidak ditemukan');
+        }
+
+        return response()->file(storage_path('app/public/' . $pengeluaran->bukti_transaksi));
     }
 }

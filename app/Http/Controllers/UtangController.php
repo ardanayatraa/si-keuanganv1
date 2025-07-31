@@ -9,6 +9,7 @@ use App\Models\KategoriPemasukan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UtangController extends Controller
 {
@@ -53,11 +54,19 @@ class UtangController extends Controller
             'tanggal_pinjam'      => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
             'deskripsi'           => 'nullable|string',
+            'bukti_transaksi'     => 'nullable|image|max:2048',
         ]);
 
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
-        DB::transaction(function() use ($data) {
+        // Proses upload file bukti transaksi jika ada
+        $buktiTransaksi = null;
+        if ($request->hasFile('bukti_transaksi')) {
+            $buktiTransaksi = $request->file('bukti_transaksi')
+                                    ->store('bukti_pemasukan', 'public');
+        }
+
+        DB::transaction(function() use ($data, $buktiTransaksi) {
             // 1) Buat utang
             $utang = Utang::create([
                 'nama'                => $data['nama'],
@@ -71,20 +80,21 @@ class UtangController extends Controller
                 'status'              => 'belum lunas',
             ]);
 
-            // 2) Pastikan kategori “Utang” ada
+            // 2) Pastikan kategori "Utang" ada
             $kategoriUtang = KategoriPemasukan::firstOrCreate(
                 ['id_pengguna' => $data['id_pengguna'], 'nama_kategori' => 'Utang'],
                 ['deskripsi' => 'Kategori mencatat penerimaan utang', 'icon' => 'fas fa-hand-holding-usd']
             );
 
-            // 3) Catat pemasukan
-            Pemasukan::create([
-                'id_pengguna' => $data['id_pengguna'],
-                'jumlah'      => $data['jumlah'],
-                'tanggal'     => $data['tanggal_pinjam'],
-                'id_kategori' => $kategoriUtang->id_kategori_pemasukan,
-                'deskripsi'   => 'Terima utang (ID ' . $utang->id_utang . ')',
-                'id_rekening' => $data['id_rekening'],
+            // 3) Catat pemasukan dengan bukti transaksi
+            $pemasukan = Pemasukan::create([
+                'id_pengguna'     => $data['id_pengguna'],
+                'jumlah'          => $data['jumlah'],
+                'tanggal'         => $data['tanggal_pinjam'],
+                'id_kategori'     => $kategoriUtang->id_kategori_pemasukan,
+                'deskripsi'       => 'Terima utang (ID ' . $utang->id_utang . ')',
+                'id_rekening'     => $data['id_rekening'],
+                'bukti_transaksi' => $buktiTransaksi,
             ]);
 
             // 4) Update saldo rekening
@@ -120,7 +130,6 @@ class UtangController extends Controller
     public function update(Request $request, $id)
     {
         $utang = Utang::where('id_utang', $id)
-
             ->where('id_pengguna', Auth::user()->id_pengguna)
             ->firstOrFail();
 
@@ -131,18 +140,43 @@ class UtangController extends Controller
             'tanggal_pinjam'      => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
             'deskripsi'           => 'nullable|string',
+            'bukti_transaksi'     => 'nullable|image|max:2048',
         ]);
-
 
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
-        DB::transaction(function() use ($data, $utang) {
-            // refund & hapus pemasukan lama
-            Pemasukan::where('deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%')
-                     ->where('tanggal', $utang->tanggal_pinjam)
-                     ->where('jumlah', $utang->jumlah)
-                     ->where('id_rekening', $utang->id_rekening)
-                     ->delete();
+        // Proses upload file bukti transaksi jika ada
+        $buktiTransaksi = null;
+        if ($request->hasFile('bukti_transaksi')) {
+            // Hapus file lama jika ada
+            $pemasukanLama = Pemasukan::where('deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%')
+                ->where('id_pengguna', Auth::user()->id_pengguna)
+                ->first();
+
+            if ($pemasukanLama && $pemasukanLama->bukti_transaksi) {
+                Storage::disk('public')->delete($pemasukanLama->bukti_transaksi);
+            }
+
+            $buktiTransaksi = $request->file('bukti_transaksi')
+                                    ->store('bukti_pemasukan', 'public');
+        } else {
+            // Jika tidak ada file baru, pertahankan file lama
+            $pemasukanLama = Pemasukan::where('deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%')
+                ->where('id_pengguna', Auth::user()->id_pengguna)
+                ->first();
+
+            if ($pemasukanLama) {
+                $buktiTransaksi = $pemasukanLama->bukti_transaksi;
+            }
+        }
+
+        DB::transaction(function() use ($data, $utang, $buktiTransaksi) {
+            // Cari pemasukan yang terkait dengan utang ini
+            $pemasukanLama = Pemasukan::where('deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%')
+                ->where('id_pengguna', Auth::user()->id_pengguna)
+                ->first();
+
+            // refund saldo lama
             Rekening::where('id_rekening', $utang->id_rekening)
                    ->decrement('saldo', $utang->jumlah);
 
@@ -164,15 +198,28 @@ class UtangController extends Controller
                 ['deskripsi' => 'Kategori mencatat penerimaan utang', 'icon' => 'fas fa-hand-holding-usd']
             );
 
-            // rekam pemasukan baru
-            Pemasukan::create([
-                'id_pengguna' => $data['id_pengguna'],
-                'jumlah'      => $data['jumlah'],
-                'tanggal'     => $data['tanggal_pinjam'],
-                'id_kategori' => $kategoriUtang->id_kategori_pemasukan,
-                'deskripsi'   => 'Terima utang (ID ' . $utang->id_utang . ')',
-                'id_rekening' => $data['id_rekening'],
-            ]);
+            // Update pemasukan yang sudah ada (jangan buat baru)
+            if ($pemasukanLama) {
+                $pemasukanLama->update([
+                    'jumlah'          => $data['jumlah'],
+                    'tanggal'         => $data['tanggal_pinjam'],
+                    'id_kategori'     => $kategoriUtang->id_kategori_pemasukan,
+                    'deskripsi'       => 'Terima utang (ID ' . $utang->id_utang . ')',
+                    'id_rekening'     => $data['id_rekening'],
+                    'bukti_transaksi' => $buktiTransaksi,
+                ]);
+            } else {
+                // Jika tidak ada pemasukan lama, buat baru
+                Pemasukan::create([
+                    'id_pengguna'     => $data['id_pengguna'],
+                    'jumlah'          => $data['jumlah'],
+                    'tanggal'         => $data['tanggal_pinjam'],
+                    'id_kategori'     => $kategoriUtang->id_kategori_pemasukan,
+                    'deskripsi'       => 'Terima utang (ID ' . $utang->id_utang . ')',
+                    'id_rekening'     => $data['id_rekening'],
+                    'bukti_transaksi' => $buktiTransaksi,
+                ]);
+            }
 
             // update saldo rekening baru
             Rekening::where('id_rekening', $data['id_rekening'])
@@ -190,6 +237,15 @@ class UtangController extends Controller
             ->firstOrFail();
 
         DB::transaction(function() use ($utang) {
+            // Hapus file bukti transaksi jika ada
+            $pemasukan = Pemasukan::where('deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%')
+                ->where('id_pengguna', Auth::user()->id_pengguna)
+                ->first();
+
+            if ($pemasukan && $pemasukan->bukti_transaksi) {
+                Storage::disk('public')->delete($pemasukan->bukti_transaksi);
+            }
+
             // hapus pemasukan & refund saldo
             Pemasukan::where('deskripsi', 'like', '%Terima utang (ID ' . $utang->id_utang . ')%')
                      ->where('tanggal', $utang->tanggal_pinjam)

@@ -5,7 +5,7 @@
         </h1>
 
         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <form action="{{ route('piutang.store') }}" method="POST">
+            <form action="{{ route('piutang.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="space-y-4">
                     {{-- Nama --}}
@@ -91,6 +91,17 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+                </div>
+
+                <div>
+                    <label for="bukti_transaksi" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Bukti Transaksi (gambar)
+                    </label>
+                    <input type="file" name="bukti_transaksi" id="bukti_transaksi" accept="image/*"
+                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm" />
+                    @error('bukti_transaksi')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div class="mt-6 flex justify-end">
