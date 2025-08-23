@@ -152,6 +152,9 @@ Route::middleware([
     // Aset routes
     Route::get('/aset/total-wealth', [AsetController::class, 'totalWealth'])->name('aset.total-wealth');
 
+    // Anggaran laporan route
+    Route::get('/anggaran/laporan', [AnggaranController::class, 'laporan'])->name('anggaran.laporan');
+
     // Resource routes
     Route::resources([
         'kategori-pemasukan'   => KategoriPemasukanController::class,

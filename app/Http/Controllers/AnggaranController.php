@@ -136,4 +136,78 @@ class AnggaranController extends Controller
         return redirect()->route('anggaran.index')
                          ->with('success','Anggaran berhasil dihapus.');
     }
+
+    public function laporan(Request $request)
+    {
+        $tahun = $request->input('tahun', date('Y'));
+        $bulan = $request->input('bulan');
+        
+        // Ambil data anggaran berdasarkan filter tahun dan bulan
+        $query = Anggaran::with('kategori', 'pengguna')
+            ->where('id_pengguna', Auth::user()->id_pengguna);
+
+        // Filter berdasarkan tahun
+        if ($tahun) {
+            $query->where(function($q) use ($tahun) {
+                $q->whereYear('periode_awal', $tahun)
+                  ->orWhereYear('periode_akhir', $tahun);
+            });
+        }
+        
+        // Filter berdasarkan bulan jika dipilih
+        if ($bulan) {
+            $query->where(function($q) use ($bulan, $tahun) {
+                $q->where(function($subQ) use ($bulan) {
+                    $subQ->whereMonth('periode_awal', $bulan)
+                         ->orWhereMonth('periode_akhir', $bulan);
+                });
+                // Pastikan tahun juga sesuai jika bulan dipilih
+                if ($tahun) {
+                    $q->where(function($subQ) use ($tahun) {
+                        $subQ->whereYear('periode_awal', $tahun)
+                             ->orWhereYear('periode_akhir', $tahun);
+                    });
+                }
+            });
+        }
+
+        $anggarans = $query->orderBy('periode_awal', 'desc')->get();
+
+        // Hitung total realisasi untuk setiap anggaran
+        $laporan = $anggarans->map(function ($anggaran) {
+            $totalRealisasi = Pengeluaran::where('id_pengguna', $anggaran->id_pengguna)
+                ->where('id_kategori', $anggaran->id_kategori)
+                ->whereBetween('tanggal', [
+                    $anggaran->periode_awal,
+                    $anggaran->periode_akhir
+                ])
+                ->sum('jumlah');
+
+            $anggaran->total_realisasi = $totalRealisasi;
+            $anggaran->sisa_anggaran = $anggaran->jumlah_batas - $totalRealisasi;
+            $anggaran->persentase_terpakai = $anggaran->jumlah_batas > 0 
+                ? ($totalRealisasi / $anggaran->jumlah_batas) * 100 
+                : 0;
+            
+            return $anggaran;
+        });
+
+        // Hitung total keseluruhan
+        $totalAnggaran = $laporan->sum('jumlah_batas');
+        $totalRealisasi = $laporan->sum('total_realisasi');
+        $totalSisa = $totalAnggaran - $totalRealisasi;
+
+        // List tahun untuk dropdown (5 tahun ke belakang dan ke depan)
+        $tahunList = collect(range(date('Y') - 5, date('Y') + 5));
+        
+        return view('anggaran.laporan', compact(
+            'laporan', 
+            'tahun', 
+            'bulan', 
+            'totalAnggaran',
+            'totalRealisasi', 
+            'totalSisa',
+            'tahunList'
+        ));
+    }
 }
