@@ -31,29 +31,56 @@
             @endif
         </div>
 
-        {{-- Filter Periode --}}
-        <form action="{{ route('anggaran.index') }}" method="GET" class="mb-4 flex space-x-4">
-            <div>
-                <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Periode Awal ≥
-                </label>
-                <input type="date" name="start_date" id="start_date" value="{{ old('start_date', $start) }}"
-                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm">
-            </div>
-            <div>
-                <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Periode Akhir ≤
-                </label>
-                <input type="date" name="end_date" id="end_date" value="{{ old('end_date', $end) }}"
-                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm">
-            </div>
-            <div class="flex items-end space-x-2">
-                <button type="submit"
-                    class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">Filter</button>
-                <a href="{{ route('anggaran.index') }}"
-                    class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">Reset</a>
-            </div>
-        </form>
+        {{-- Filter Tahun dan Bulan --}}
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
+            <form action="{{ route('anggaran.index') }}" method="GET" class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-32">
+                    <label for="tahun" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Tahun
+                    </label>
+                    <select name="tahun" id="tahun" 
+                        class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm">
+                        @foreach($tahunList as $year)
+                            <option value="{{ $year }}" {{ $tahun == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="flex-1 min-w-32">
+                    <label for="bulan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Bulan
+                    </label>
+                    <select name="bulan" id="bulan" 
+                        class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm">
+                        <option value="">Semua Bulan</option>
+                        <option value="1" {{ $bulan == '1' ? 'selected' : '' }}>Januari</option>
+                        <option value="2" {{ $bulan == '2' ? 'selected' : '' }}>Februari</option>
+                        <option value="3" {{ $bulan == '3' ? 'selected' : '' }}>Maret</option>
+                        <option value="4" {{ $bulan == '4' ? 'selected' : '' }}>April</option>
+                        <option value="5" {{ $bulan == '5' ? 'selected' : '' }}>Mei</option>
+                        <option value="6" {{ $bulan == '6' ? 'selected' : '' }}>Juni</option>
+                        <option value="7" {{ $bulan == '7' ? 'selected' : '' }}>Juli</option>
+                        <option value="8" {{ $bulan == '8' ? 'selected' : '' }}>Agustus</option>
+                        <option value="9" {{ $bulan == '9' ? 'selected' : '' }}>September</option>
+                        <option value="10" {{ $bulan == '10' ? 'selected' : '' }}>Oktober</option>
+                        <option value="11" {{ $bulan == '11' ? 'selected' : '' }}>November</option>
+                        <option value="12" {{ $bulan == '12' ? 'selected' : '' }}>Desember</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <button type="submit" 
+                        class="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-md transition-colors">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
 
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

@@ -12,27 +12,46 @@ class AnggaranController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil filter periode jika ada
-        $start = $request->input('start_date');
-        $end   = $request->input('end_date');
+        // Ambil filter tahun dan bulan
+        $tahun = $request->input('tahun', date('Y'));
+        $bulan = $request->input('bulan');
 
         $query = Anggaran::with('kategori')
             ->where('id_pengguna', Auth::user()->id_pengguna);
 
-        if ($start) {
-            // periode_awal on or after start
-            $query->whereDate('periode_awal', '>=', $start);
+        // Filter berdasarkan tahun
+        if ($tahun) {
+            $query->where(function($q) use ($tahun) {
+                $q->whereYear('periode_awal', $tahun)
+                  ->orWhereYear('periode_akhir', $tahun);
+            });
         }
-        if ($end) {
-            // periode_akhir on or before end
-            $query->whereDate('periode_akhir', '<=', $end);
+        
+        // Filter berdasarkan bulan jika dipilih
+        if ($bulan) {
+            $query->where(function($q) use ($bulan, $tahun) {
+                $q->where(function($subQ) use ($bulan) {
+                    $subQ->whereMonth('periode_awal', $bulan)
+                         ->orWhereMonth('periode_akhir', $bulan);
+                });
+                // Pastikan tahun juga sesuai jika bulan dipilih
+                if ($tahun) {
+                    $q->where(function($subQ) use ($tahun) {
+                        $subQ->whereYear('periode_awal', $tahun)
+                             ->orWhereYear('periode_akhir', $tahun);
+                    });
+                }
+            });
         }
 
         $items = $query
             ->orderBy('periode_awal', 'desc')
             ->get();
 
-        return view('anggaran.index', compact('items', 'start', 'end'));
+        // List tahun untuk dropdown (5 tahun ke belakang dan ke depan)
+        $tahunList = collect(range(date('Y') - 5, date('Y') + 5));
+
+        return view('anggaran.index', compact('items', 'tahun', 'bulan', 'tahunList'));
     }
 
     public function create()
