@@ -27,7 +27,7 @@ class AnggaranController extends Controller
                   ->orWhereYear('periode_akhir', $tahun);
             });
         }
-        
+
         // Filter berdasarkan bulan jika dipilih
         if ($bulan) {
             $query->where(function($q) use ($bulan, $tahun) {
@@ -161,7 +161,7 @@ class AnggaranController extends Controller
     {
         $tahun = $request->input('tahun', date('Y'));
         $bulan = $request->input('bulan');
-        
+
         // Ambil data anggaran berdasarkan filter tahun dan bulan
         $query = Anggaran::with('kategori', 'pengguna')
             ->where('id_pengguna', Auth::user()->id_pengguna);
@@ -173,7 +173,7 @@ class AnggaranController extends Controller
                   ->orWhereYear('periode_akhir', $tahun);
             });
         }
-        
+
         // Filter berdasarkan bulan jika dipilih
         if ($bulan) {
             $query->where(function($q) use ($bulan, $tahun) {
@@ -205,10 +205,10 @@ class AnggaranController extends Controller
 
             $anggaran->total_realisasi = $totalRealisasi;
             $anggaran->sisa_anggaran = $anggaran->jumlah_batas - $totalRealisasi;
-            $anggaran->persentase_terpakai = $anggaran->jumlah_batas > 0 
-                ? ($totalRealisasi / $anggaran->jumlah_batas) * 100 
+            $anggaran->persentase_terpakai = $anggaran->jumlah_batas > 0
+                ? ($totalRealisasi / $anggaran->jumlah_batas) * 100
                 : 0;
-            
+
             return $anggaran;
         });
 
@@ -219,13 +219,13 @@ class AnggaranController extends Controller
 
         // List tahun untuk dropdown (5 tahun ke belakang dan ke depan)
         $tahunList = collect(range(date('Y') - 5, date('Y') + 5));
-        
+
         return view('anggaran.laporan', compact(
-            'laporan', 
-            'tahun', 
-            'bulan', 
+            'laporan',
+            'tahun',
+            'bulan',
             'totalAnggaran',
-            'totalRealisasi', 
+            'totalRealisasi',
             'totalSisa',
             'tahunList'
         ));
@@ -235,7 +235,7 @@ class AnggaranController extends Controller
     {
         $tahun = $request->input('tahun', date('Y'));
         $bulan = $request->input('bulan');
-        
+
         // Ambil data anggaran berdasarkan filter tahun dan bulan (sama seperti method laporan)
         $query = Anggaran::with('kategori', 'pengguna')
             ->where('id_pengguna', Auth::user()->id_pengguna);
@@ -247,7 +247,7 @@ class AnggaranController extends Controller
                   ->orWhereYear('periode_akhir', $tahun);
             });
         }
-        
+
         // Filter berdasarkan bulan jika dipilih
         if ($bulan) {
             $query->where(function($q) use ($bulan, $tahun) {
@@ -279,10 +279,10 @@ class AnggaranController extends Controller
 
             $anggaran->total_realisasi = $totalRealisasi;
             $anggaran->sisa_anggaran = $anggaran->jumlah_batas - $totalRealisasi;
-            $anggaran->persentase_terpakai = $anggaran->jumlah_batas > 0 
-                ? ($totalRealisasi / $anggaran->jumlah_batas) * 100 
+            $anggaran->persentase_terpakai = $anggaran->jumlah_batas > 0
+                ? ($totalRealisasi / $anggaran->jumlah_batas) * 100
                 : 0;
-            
+
             return $anggaran;
         });
 
@@ -292,10 +292,10 @@ class AnggaranController extends Controller
         $totalSisa = $totalAnggaran - $totalRealisasi;
 
         // Generate nama file
-        $periode = $bulan ? 
-            \Carbon\Carbon::createFromFormat('m', $bulan)->format('F') . '_' . $tahun : 
+        $periode = $bulan ?
+            \Carbon\Carbon::createFromFormat('m', $bulan)->format('F') . '_' . $tahun :
             'Tahun_' . $tahun;
-        
+
         $filename = 'Laporan_Anggaran_' . $periode . '_' . date('Y-m-d') . '.pdf';
 
         // Generate PDF

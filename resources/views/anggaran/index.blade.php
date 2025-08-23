@@ -14,7 +14,9 @@
                 <a href="{{ route('anggaran.laporan') }}"
                     class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
                     </svg>
                     Laporan Anggaran
                 </a>
@@ -38,21 +40,21 @@
                     <label for="tahun" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Tahun
                     </label>
-                    <select name="tahun" id="tahun" 
+                    <select name="tahun" id="tahun"
                         class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm">
-                        @foreach($tahunList as $year)
+                        @foreach ($tahunList as $year)
                             <option value="{{ $year }}" {{ $tahun == $year ? 'selected' : '' }}>
                                 {{ $year }}
                             </option>
                         @endforeach
                     </select>
                 </div>
-                
+
                 <div class="flex-1 min-w-32">
                     <label for="bulan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Bulan
                     </label>
-                    <select name="bulan" id="bulan" 
+                    <select name="bulan" id="bulan"
                         class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm">
                         <option value="">Semua Bulan</option>
                         <option value="1" {{ $bulan == '1' ? 'selected' : '' }}>Januari</option>
@@ -69,12 +71,13 @@
                         <option value="12" {{ $bulan == '12' ? 'selected' : '' }}>Desember</option>
                     </select>
                 </div>
-                
+
                 <div>
-                    <button type="submit" 
+                    <button type="submit"
                         class="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-md transition-colors">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         Filter
                     </button>
