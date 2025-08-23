@@ -1,144 +1,16 @@
 <x-app-layout>
-    <style>
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            
-            body {
-                color: black !important;
-                background: white !important;
-                font-size: 12px !important;
-            }
-            
-            .bg-blue-600, .bg-red-600, .bg-green-600 {
-                color: black !important;
-                border: 1px solid #000 !important;
-                background: white !important;
-                print-color-adjust: exact !important;
-            }
-            
-            .text-white {
-                color: black !important;
-            }
-            
-            .text-blue-100, .text-red-100, .text-green-100 {
-                color: #666 !important;
-            }
-            
-            table {
-                border-collapse: collapse !important;
-                width: 100% !important;
-            }
-            
-            th, td {
-                border: 1px solid #000 !important;
-                padding: 6px !important;
-                font-size: 11px !important;
-            }
-            
-            th {
-                background: #f0f0f0 !important;
-                font-weight: bold !important;
-                text-align: center !important;
-            }
-            
-            .rounded-lg, .rounded-full, .rounded-md {
-                border-radius: 0 !important;
-            }
-            
-            .shadow-sm {
-                box-shadow: none !important;
-            }
-            
-            /* Header untuk print */
-            .print-header {
-                display: block !important;
-                text-align: center;
-                margin-bottom: 30px;
-                border-bottom: 2px solid #000;
-                padding-bottom: 15px;
-            }
-            
-            .print-date {
-                display: block !important;
-                text-align: right;
-                margin-bottom: 20px;
-                font-size: 10px;
-                color: #666;
-            }
-            
-            /* Summary cards untuk print */
-            .grid {
-                display: flex !important;
-                justify-content: space-between !important;
-                margin-bottom: 20px !important;
-            }
-            
-            .grid > div {
-                flex: 1 !important;
-                margin: 0 5px !important;
-                padding: 10px !important;
-                border: 1px solid #000 !important;
-                text-align: center !important;
-            }
-            
-            /* Status badges */
-            .bg-red-100, .bg-yellow-100, .bg-green-100 {
-                border: 1px solid #000 !important;
-                background: white !important;
-                color: black !important;
-            }
-            
-            /* Progress bars */
-            .bg-gray-200 {
-                background: #e0e0e0 !important;
-                border: 1px solid #666 !important;
-            }
-            
-            .bg-red-600, .bg-yellow-500, .bg-green-500 {
-                background: #666 !important;
-            }
-        }
-        
-        @page {
-            margin: 1.5cm;
-            size: A4;
-        }
-        
-        .hidden {
-            display: none;
-        }
-    </style>
-    
     <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        
-        {{-- Header khusus untuk print --}}
-        <div class="print-header hidden" id="print-header">
-            <h1 class="text-3xl font-bold">LAPORAN ANGGARAN</h1>
-            <p class="text-lg mt-2">Sistem Keuangan Personal</p>
-            <p class="text-md mt-1">
-                Periode: {{ $bulan ? 
-                    \Carbon\Carbon::createFromFormat('m', $bulan)->format('F') . ' ' . $tahun : 
-                    'Tahun ' . $tahun 
-                }}
-            </p>
-        </div>
-        
-        <div class="print-date hidden" id="print-date">
-            <p>Dicetak pada: {{ \Carbon\Carbon::now()->format('d F Y, H:i') }} WIB</p>
-        </div>
 
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Laporan Anggaran</h1>
-            <div class="flex space-x-3 no-print">
-                <button onclick="printLaporan()" 
-                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            <div class="flex space-x-3">
+                <a href="{{ route('anggaran.laporan.export-pdf') }}?tahun={{ $tahun }}&bulan={{ $bulan }}"
+                    class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    Print Laporan
-                </button>
+                    Export PDF
+                </a>
                 <a href="{{ route('anggaran.index') }}"
                     class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +22,7 @@
         </div>
 
         {{-- Filter Tahun dan Bulan --}}
-        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6 no-print">
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
             <form action="{{ route('anggaran.laporan') }}" method="GET" class="flex flex-wrap gap-4 items-end">
                 <div class="flex-1 min-w-32">
                     <label for="tahun" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -356,30 +228,4 @@
             </p>
         </div>
     </div>
-    
-    <script>
-        // Tampilkan header print saat print
-        window.addEventListener('beforeprint', function() {
-            document.getElementById('print-header').classList.remove('hidden');
-            document.getElementById('print-date').classList.remove('hidden');
-        });
-        
-        // Sembunyikan header print setelah print
-        window.addEventListener('afterprint', function() {
-            document.getElementById('print-header').classList.add('hidden');
-            document.getElementById('print-date').classList.add('hidden');
-        });
-        
-        // Fungsi untuk print dengan menyesuaikan tampilan
-        function printLaporan() {
-            // Tampilkan header print
-            document.getElementById('print-header').classList.remove('hidden');
-            document.getElementById('print-date').classList.remove('hidden');
-            
-            // Delay sebentar lalu print
-            setTimeout(function() {
-                window.print();
-            }, 100);
-        }
-    </script>
 </x-app-layout>

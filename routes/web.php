@@ -154,6 +154,7 @@ Route::middleware([
 
     // Anggaran laporan route
     Route::get('/anggaran/laporan', [AnggaranController::class, 'laporan'])->name('anggaran.laporan');
+    Route::get('/anggaran/laporan/export-pdf', [AnggaranController::class, 'exportPdf'])->name('anggaran.laporan.export-pdf');
 
     // Resource routes
     Route::resources([
