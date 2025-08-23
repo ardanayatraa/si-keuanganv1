@@ -188,15 +188,15 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->persentase_terpakai > 100)
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Over Budget
+                                        Melebihi Batas
                                     </span>
                                 @elseif($item->persentase_terpakai > 80)
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Warning
+                                        Peringatan
                                     </span>
                                 @else
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Safe
+                                        Aman
                                     </span>
                                 @endif
                             </td>

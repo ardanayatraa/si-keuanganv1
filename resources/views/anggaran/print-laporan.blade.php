@@ -236,11 +236,11 @@
                             </td>
                             <td class="text-center">
                                 @if($item->persentase_terpakai > 100)
-                                    <span class="status-danger">Over Budget</span>
+                                    <span class="status-danger">Melebihi Batas</span>
                                 @elseif($item->persentase_terpakai > 80)
-                                    <span class="status-warning">Warning</span>
+                                    <span class="status-warning">Peringatan</span>
                                 @else
-                                    <span class="status-safe">Safe</span>
+                                    <span class="status-safe">Aman</span>
                                 @endif
                             </td>
                             <td>{{ $item->deskripsi ?? '-' }}</td>
