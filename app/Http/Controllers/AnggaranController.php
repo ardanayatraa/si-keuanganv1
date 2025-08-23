@@ -309,6 +309,6 @@ class AnggaranController extends Controller
             'generated_at' => now()->format('d F Y H:i')
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download($filename);
+        return $pdf->stream($filename);
     }
 }
