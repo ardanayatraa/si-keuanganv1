@@ -208,7 +208,7 @@
                     <tr>
                         <th style="width: 15%;">Kategori</th>
                         <th style="width: 15%;">Periode</th>
-                        <th style="width: 12%;">Anggaran</th>
+                        <th style="width: 12%;">Jumlah Anggaran</th>
                         <th style="width: 12%;">Terpakai</th>
                         <th style="width: 12%;">Sisa</th>
                         <th style="width: 8%;">%</th>

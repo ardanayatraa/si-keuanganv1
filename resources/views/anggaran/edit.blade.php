@@ -43,10 +43,10 @@
                         @enderror
                     </div>
 
-                    {{-- Jumlah Batas --}}
+                    {{-- Jumlah Anggaran --}}
                     <div>
                         <label for="jumlah_batas" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Jumlah Batas
+                            Jumlah Anggaran
                         </label>
                         <input id="jumlah_batas" name="jumlah_batas" type="number" step="0.01"
                             value="{{ old('jumlah_batas', $anggaran->jumlah_batas) }}"
@@ -54,6 +54,33 @@
                         @error('jumlah_batas')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    {{-- Template Periode --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            Template Periode
+                        </label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="template_periode" value="manual" checked
+                                    class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Manual</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="template_periode" value="bulan_ini"
+                                    class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Bulan Ini</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="template_periode" value="bulan_depan"
+                                    class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Bulan Depan</span>
+                            </label>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Pilih template untuk mengisi periode otomatis atau pilih manual untuk mempertahankan nilai yang ada
+                        </p>
                     </div>
 
                     {{-- Periode Awal --}}
@@ -96,4 +123,36 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const templateInputs = document.querySelectorAll('input[name="template_periode"]');
+            const periodeAwal = document.getElementById('periode_awal');
+            const periodeAkhir = document.getElementById('periode_akhir');
+            
+            templateInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const today = new Date();
+                    let startDate, endDate;
+                    
+                    if (this.value === 'bulan_ini') {
+                        // Set ke tanggal 1 bulan ini sampai tanggal terakhir bulan ini
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    } else if (this.value === 'bulan_depan') {
+                        // Set ke tanggal 1 bulan depan sampai tanggal terakhir bulan depan
+                        startDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+                        endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+                    } else {
+                        // Manual - biarkan nilai yang sudah ada
+                        return;
+                    }
+                    
+                    // Format ke YYYY-MM-DD untuk input date
+                    periodeAwal.value = startDate.toISOString().split('T')[0];
+                    periodeAkhir.value = endDate.toISOString().split('T')[0];
+                });
+            });
+        });
+    </script>
 </x-app-layout>
