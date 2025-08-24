@@ -1,13 +1,5 @@
 <x-app-layout>
-    <div class="bg-white dark                    {{-- Jumlah Anggaran --}}
-                    <div>
-                        <label for="jumlah_batas" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Jumlah Anggaran
-                        </label>
-                        <input id="jumlah_batas" name="jumlah_batas" type="number" step="0.01"
-                            value="{{ old('jumlah_batas') }}"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm"
-                            placeholder="Masukkan jumlah anggaran…" />800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Tambah Anggaran
         </h1>
@@ -50,15 +42,15 @@
                         @enderror
                     </div>
 
-                    {{-- Jumlah Batas --}}
+                    {{-- Jumlah Anggaran --}}
                     <div>
                         <label for="jumlah_batas" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Jumlah Batas
+                            Jumlah Anggaran
                         </label>
                         <input id="jumlah_batas" name="jumlah_batas" type="number" step="0.01"
                             value="{{ old('jumlah_batas') }}"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
-                            placeholder="Masukkan jumlah batas…" />
+                            placeholder="Masukkan jumlah anggaran…" />
                         @error('jumlah_batas')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
