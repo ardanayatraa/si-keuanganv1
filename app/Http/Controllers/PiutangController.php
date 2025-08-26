@@ -56,9 +56,15 @@ class PiutangController extends Controller
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
+            'jangka_waktu_bulan'  => 'nullable|integer|min:1',
             'deskripsi'           => 'nullable|string',
             'bukti_transaksi'     => 'nullable|image|max:2048',
         ]);
+
+        // Hitung jumlah cicilan per bulan jika jangka waktu bulan diisi
+        if (!empty($data['jangka_waktu_bulan'])) {
+            $data['jumlah_cicilan_per_bulan'] = $data['jumlah'] / $data['jangka_waktu_bulan'];
+        }
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
         // Proses upload file bukti transaksi jika ada
@@ -87,6 +93,8 @@ class PiutangController extends Controller
                 'sisa_piutang'        => $data['jumlah'],
                 'tanggal_pinjam'      => $data['tanggal_pinjam'],
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
+                'jangka_waktu_bulan'  => $data['jangka_waktu_bulan'] ?? null,
+                'jumlah_cicilan_per_bulan' => $data['jumlah_cicilan_per_bulan'] ?? null,
                 'deskripsi'           => $data['deskripsi'] ?? null,
                 'status'              => 'belum lunas',
             ]);
@@ -146,9 +154,15 @@ class PiutangController extends Controller
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
+            'jangka_waktu_bulan'  => 'nullable|integer|min:1',
             'deskripsi'           => 'nullable|string',
             'bukti_transaksi'     => 'nullable|image|max:2048',
         ]);
+
+        // Hitung jumlah cicilan per bulan jika jangka waktu bulan diisi
+        if (!empty($data['jangka_waktu_bulan'])) {
+            $data['jumlah_cicilan_per_bulan'] = $data['jumlah'] / $data['jangka_waktu_bulan'];
+        }
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
         // Proses upload file bukti transaksi jika ada
@@ -190,6 +204,8 @@ class PiutangController extends Controller
                 'sisa_piutang'        => $data['jumlah'],
                 'tanggal_pinjam'      => $data['tanggal_pinjam'],
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
+                'jangka_waktu_bulan'  => $data['jangka_waktu_bulan'] ?? null,
+                'jumlah_cicilan_per_bulan' => $data['jumlah_cicilan_per_bulan'] ?? null,
                 'deskripsi'           => $data['deskripsi'] ?? null,
                 'status'              => 'belum lunas',
                 'id_pemasukan'        => null,

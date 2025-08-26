@@ -21,10 +21,15 @@
                             <option value="{{ $u->id_utang }}" data-original="{{ $original }}"
                                 data-paid="{{ $paid }}" data-remaining="{{ $remaining }}"
                                 data-due="{{ \Carbon\Carbon::parse($u->tanggal_jatuh_tempo)->format('d/m/Y') }}"
+                                data-jangka-waktu="{{ $u->jangka_waktu_bulan ?? 0 }}"
+                                data-cicilan-bulanan="{{ $u->jumlah_cicilan_per_bulan ?? 0 }}"
                                 {{ old('id_utang') == $u->id_utang ? 'selected' : '' }}>
                                 {{ $u->pengguna->username }} — sisa {{ number_format($remaining, 2, ',', '.') }}
                                 (tempo {{ \Carbon\Carbon::parse($u->tanggal_jatuh_tempo)->format('d/m/Y') }})
-                                @if($u->status == 'lunas')
+                                @if ($u->jangka_waktu_bulan)
+                                    <span class="text-blue-600">(Cicilan)</span>
+                                @endif
+                                @if ($u->status == 'lunas')
                                     <span class="text-green-600">(Lunas)</span>
                                 @endif
                             </option>
@@ -55,11 +60,38 @@
                             <span id="info-due"></span>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 mb-4">
                         <div class="flex-1 bg-gray-200 rounded h-2 overflow-hidden">
                             <div id="info-bar" class="h-2 bg-yellow-600" style="width:0%"></div>
                         </div>
                         <span id="info-pct" class="text-sm font-medium text-gray-700">0%</span>
+                    </div>
+
+                    {{-- Informasi Cicilan --}}
+                    <div id="cicilan-info" class="hidden border-t border-gray-300 pt-4 mt-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">📅 Informasi Cicilan</h4>
+                        <div class="flex flex-wrap -mx-4 text-sm text-gray-700">
+                            <div class="w-1/2 sm:w-1/3 px-4 mb-2">
+                                <strong>Jangka Waktu:</strong><br>
+                                <span id="info-jangka-waktu"></span> bulan
+                            </div>
+                            <div class="w-1/2 sm:w-1/3 px-4 mb-2">
+                                <strong>Cicilan per Bulan:</strong><br>
+                                <span id="info-cicilan-bulanan"></span>
+                            </div>
+                            <div class="w-full sm:w-1/3 px-4 mb-2">
+                                <strong>Status Cicilan:</strong><br>
+                                <span id="info-status-cicilan"
+                                    class="inline-block px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">Aktif</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                            <p class="text-sm text-blue-700">
+                                💡 <strong>Saran:</strong> Jumlah cicilan per bulan adalah <span
+                                    id="suggestion-amount"></span>.
+                                Anda dapat membayar sesuai cicilan atau lebih besar untuk melunasi lebih cepat.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -143,12 +175,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             const sel = document.getElementById('id_utang');
             const info = document.getElementById('utang-info');
+            const cicilanInfo = document.getElementById('cicilan-info');
             const oEl = document.getElementById('info-original');
             const pEl = document.getElementById('info-paid');
             const rEl = document.getElementById('info-remaining');
             const dEl = document.getElementById('info-due');
             const bar = document.getElementById('info-bar');
             const pctEl = document.getElementById('info-pct');
+
+            // Elemen cicilan
+            const jangkaWaktuEl = document.getElementById('info-jangka-waktu');
+            const cicilanBulananEl = document.getElementById('info-cicilan-bulanan');
+            const statusCicilanEl = document.getElementById('info-status-cicilan');
+            const suggestionAmountEl = document.getElementById('suggestion-amount');
 
             const fmt = new Intl.NumberFormat('id-ID', {
                 style: 'currency',
@@ -159,12 +198,15 @@
                 const opt = sel.selectedOptions[0];
                 if (!opt || !opt.value) {
                     info.classList.add('hidden');
+                    cicilanInfo.classList.add('hidden');
                     return;
                 }
                 const orig = Number(opt.dataset.original);
                 const paid = Number(opt.dataset.paid);
                 const rem = Number(opt.dataset.remaining);
                 const due = opt.dataset.due;
+                const jangkaWaktu = Number(opt.dataset.jangkaWaktu);
+                const cicilanBulanan = Number(opt.dataset.cicilanBulanan);
 
                 oEl.textContent = fmt.format(orig);
                 pEl.textContent = fmt.format(paid);
@@ -174,6 +216,28 @@
                 const pct = orig > 0 ? Math.round((paid / orig) * 100) : 0;
                 bar.style.width = pct + '%';
                 pctEl.textContent = pct + '%';
+
+                // Update informasi cicilan
+                if (jangkaWaktu > 0 && cicilanBulanan > 0) {
+                    jangkaWaktuEl.textContent = jangkaWaktu;
+                    cicilanBulananEl.textContent = fmt.format(cicilanBulanan);
+                    suggestionAmountEl.textContent = fmt.format(cicilanBulanan);
+
+                    // Set status cicilan berdasarkan sisa utang
+                    if (rem <= 0) {
+                        statusCicilanEl.textContent = 'Lunas';
+                        statusCicilanEl.className =
+                            'inline-block px-2 py-1 text-xs rounded bg-green-100 text-green-800';
+                    } else {
+                        statusCicilanEl.textContent = 'Aktif';
+                        statusCicilanEl.className =
+                            'inline-block px-2 py-1 text-xs rounded bg-blue-100 text-blue-800';
+                    }
+
+                    cicilanInfo.classList.remove('hidden');
+                } else {
+                    cicilanInfo.classList.add('hidden');
+                }
 
                 info.classList.remove('hidden');
             }

@@ -30,7 +30,7 @@
                                     {{ old('id_utang', $p->id_utang) == $utang->id_utang ? 'selected' : '' }}>
                                     {{ $utang->pengguna->username }} — sisa {{ number_format($remaining, 2, ',', '.') }}
                                     (tempo {{ \Carbon\Carbon::parse($utang->tanggal_jatuh_tempo)->format('d/m/Y') }})
-                                    @if($utang->status == 'lunas')
+                                    @if ($utang->status == 'lunas')
                                         <span class="text-green-600">(Lunas)</span>
                                     @endif
                                 </option>
@@ -66,6 +66,23 @@
                                 <div id="info-bar" class="h-2 bg-yellow-600" style="width:0%"></div>
                             </div>
                             <span id="info-pct" class="text-sm font-medium text-gray-700 dark:text-gray-300">0%</span>
+                        </div>
+                        <div id="installment-info" class="mt-4">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Detail Cicilan</h2>
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead
+                                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3">No.</th>
+                                        <th scope="col" class="px-6 py-3">Tanggal Jatuh Tempo</th>
+                                        <th scope="col" class="px-6 py-3">Jumlah Cicilan</th>
+                                        <th scope="col" class="px-6 py-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="installment-table-body">
+                                    <!-- Installment rows will be dynamically inserted here -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -200,6 +217,58 @@
 
             sel.addEventListener('change', update);
             update(); // inisialisasi saat memuat form
+
+            // Function to update installment table
+            function updateInstallments() {
+                const opt = sel.selectedOptions[0];
+                if (!opt || !opt.value) {
+                    document.getElementById('installment-table-body').innerHTML = '';
+                    return;
+                }
+
+                const utangId = opt.value;
+                fetch(`/api/utang/${utangId}/installments`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.getElementById('installment-table-body');
+                        tbody.innerHTML = '';
+
+                        data.forEach((installment, index) => {
+                            const row = document.createElement('tr');
+
+                            const noCell = document.createElement('td');
+                            noCell.className = 'px-6 py-4';
+                            noCell.textContent = index + 1;
+
+                            const dateCell = document.createElement('td');
+                            dateCell.className = 'px-6 py-4';
+                            dateCell.textContent = installment.tanggal_jatuh_tempo;
+
+                            const amountCell = document.createElement('td');
+                            amountCell.className = 'px-6 py-4';
+                            amountCell.textContent = new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR'
+                            }).format(installment.jumlah_cicilan);
+
+                            const statusCell = document.createElement('td');
+                            statusCell.className = 'px-6 py-4';
+                            statusCell.textContent = installment.status;
+
+                            row.appendChild(noCell);
+                            row.appendChild(dateCell);
+                            row.appendChild(amountCell);
+                            row.appendChild(statusCell);
+
+                            tbody.appendChild(row);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching installments:', error));
+            }
+
+            // Call updateInstallments when the utang selection changes
+            sel.addEventListener('change', updateInstallments);
+            updateInstallments(); // inisialisasi saat memuat form
         });
     </script>
 </x-app-layout>

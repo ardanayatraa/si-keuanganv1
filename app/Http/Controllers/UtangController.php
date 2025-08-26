@@ -53,9 +53,15 @@ class UtangController extends Controller
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
+            'jangka_waktu_bulan'  => 'nullable|integer|min:1',
             'deskripsi'           => 'nullable|string',
             'bukti_transaksi'     => 'nullable|image|max:2048',
         ]);
+
+        // Hitung jumlah cicilan per bulan jika jangka waktu bulan diisi
+        if (!empty($data['jangka_waktu_bulan'])) {
+            $data['jumlah_cicilan_per_bulan'] = $data['jumlah'] / $data['jangka_waktu_bulan'];
+        }
 
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
@@ -77,6 +83,8 @@ class UtangController extends Controller
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
                 'deskripsi'           => $data['deskripsi'] ?? null,
                 'sisa_hutang'         => $data['jumlah'],
+                'jangka_waktu_bulan'  => $data['jangka_waktu_bulan'] ?? null,
+                'jumlah_cicilan_per_bulan' => $data['jumlah_cicilan_per_bulan'] ?? null,
                 'status'              => 'belum lunas',
             ]);
 
@@ -139,9 +147,15 @@ class UtangController extends Controller
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
+            'jangka_waktu_bulan'  => 'nullable|integer|min:1',
             'deskripsi'           => 'nullable|string',
             'bukti_transaksi'     => 'nullable|image|max:2048',
         ]);
+
+        // Hitung jumlah cicilan per bulan jika jangka waktu bulan diisi
+        if (!empty($data['jangka_waktu_bulan'])) {
+            $data['jumlah_cicilan_per_bulan'] = $data['jumlah'] / $data['jangka_waktu_bulan'];
+        }
 
         $data['id_pengguna'] = Auth::user()->id_pengguna;
 
@@ -188,6 +202,8 @@ class UtangController extends Controller
                 'sisa_hutang'         => $data['jumlah'],
                 'tanggal_pinjam'      => $data['tanggal_pinjam'],
                 'tanggal_jatuh_tempo' => $data['tanggal_jatuh_tempo'],
+                'jangka_waktu_bulan'  => $data['jangka_waktu_bulan'] ?? null,
+                'jumlah_cicilan_per_bulan' => $data['jumlah_cicilan_per_bulan'] ?? null,
                 'deskripsi'           => $data['deskripsi'] ?? null,
                 'status'              => 'belum lunas',
             ]);
@@ -261,5 +277,23 @@ class UtangController extends Controller
 
         return redirect()->route('utang.index')
                          ->with('success', 'Utang berhasil dihapus dan saldo rekening dikembalikan.');
+    }
+    public function getInstallments($utangId)
+    {
+        $utang = Utang::with('jadwalCicilanUtang')->find($utangId);
+
+        if (!$utang) {
+            return response()->json(['message' => 'Utang not found'], 404);
+        }
+
+        $installments = $utang->jadwalCicilanUtang->map(function ($cicilan) {
+            return [
+                'tanggal_jatuh_tempo' => $cicilan->tanggal_jatuh_tempo,
+                'jumlah_cicilan' => $cicilan->jumlah_cicilan,
+                'status' => $cicilan->status,
+            ];
+        });
+
+        return response()->json($installments);
     }
 }

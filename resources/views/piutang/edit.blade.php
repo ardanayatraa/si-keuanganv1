@@ -101,6 +101,24 @@
                         @enderror
                     </div>
 
+                    {{-- Jangka Waktu Cicilan (bulan) --}}
+                    <div>
+                        <label for="jangka_waktu_bulan"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Jangka Waktu Cicilan (bulan)
+                        </label>
+                        <input id="jangka_waktu_bulan" name="jangka_waktu_bulan" type="number" min="1"
+                            value="{{ old('jangka_waktu_bulan', $piutang->jangka_waktu_bulan) }}"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
+                            placeholder="Opsional..." />
+                        @error('jangka_waktu_bulan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Jika diisi, sistem akan menghitung jumlah cicilan per bulan secara otomatis.
+                        </p>
+                    </div>
+
                     {{-- Deskripsi --}}
                     <div>
                         <label for="deskripsi" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
