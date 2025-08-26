@@ -88,7 +88,7 @@
                         <input id="jangka_waktu_bulan" name="jangka_waktu_bulan" type="number" min="1"
                             value="{{ old('jangka_waktu_bulan') }}"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-800 dark:text-white"
-                            placeholder="Opsional..." />
+                            required />
                         @error('jangka_waktu_bulan')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror

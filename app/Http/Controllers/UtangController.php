@@ -53,7 +53,7 @@ class UtangController extends Controller
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
-            'jangka_waktu_bulan'  => 'nullable|integer|min:1',
+            'jangka_waktu_bulan'  => 'required|integer|min:1',
             'deskripsi'           => 'nullable|string',
             'bukti_transaksi'     => 'nullable|image|max:2048',
         ]);
@@ -147,7 +147,7 @@ class UtangController extends Controller
             'jumlah'              => 'required|numeric|min:0.01',
             'tanggal_pinjam'      => 'required|date',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:tanggal_pinjam',
-            'jangka_waktu_bulan'  => 'nullable|integer|min:1',
+            'jangka_waktu_bulan'  => 'required|integer|min:1',
             'deskripsi'           => 'nullable|string',
             'bukti_transaksi'     => 'nullable|image|max:2048',
         ]);

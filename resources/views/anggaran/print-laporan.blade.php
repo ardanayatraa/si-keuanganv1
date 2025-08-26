@@ -212,16 +212,6 @@
         </p>
     </div>
 
-    <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #10b981; background-color: #d1fae5;">
-        <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #047857;">Total Cicilan Piutang</h3>
-        <p style="margin: 0; font-size: 12px; color: #047857;">
-            Total cicilan piutang untuk periode ini: <strong>Rp
-                {{ number_format($totalCicilanPiutang, 0, ',', '.') }}</strong>
-        </p>
-        <p style="margin: 5px 0 0 0; font-size: 10px; color: #047857;">
-            Proyeksi pemasukan dari cicilan piutang yang akan diterima setiap bulannya.
-        </p>
-    </div>
 
     <div class="table-container">
         @if ($laporan->count() > 0)

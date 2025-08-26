@@ -72,25 +72,7 @@ class AnggaranController extends Controller
                 ->sum('jumlah_cicilan_per_bulan') * 12; // 12 bulan
         }
 
-        // Hitung total cicilan piutang untuk periode yang ditampilkan
-        $totalCicilanPiutang = 0;
-        if ($bulan) {
-            // Jika ada filter bulan, hitung cicilan untuk bulan tersebut
-            $totalCicilanPiutang = Piutang::where('id_pengguna', Auth::user()->id_pengguna)
-                ->whereNotNull('jumlah_cicilan_per_bulan')
-                ->where('jumlah_cicilan_per_bulan', '>', 0)
-                ->where('status', 'aktif')
-                ->sum('jumlah_cicilan_per_bulan');
-        } else {
-            // Jika tidak ada filter bulan, hitung cicilan untuk seluruh tahun
-            $totalCicilanPiutang = Piutang::where('id_pengguna', Auth::user()->id_pengguna)
-                ->whereNotNull('jumlah_cicilan_per_bulan')
-                ->where('jumlah_cicilan_per_bulan', '>', 0)
-                ->where('status', 'aktif')
-                ->sum('jumlah_cicilan_per_bulan') * 12; // 12 bulan
-        }
-
-        return view('anggaran.index', compact('items', 'tahun', 'bulan', 'tahunList', 'totalCicilanUtang', 'totalCicilanPiutang'));
+        return view('anggaran.index', compact('items', 'tahun', 'bulan', 'tahunList', 'totalCicilanUtang'));
     }
 
     public function create()
@@ -268,24 +250,6 @@ class AnggaranController extends Controller
                 ->sum('jumlah_cicilan_per_bulan') * 12; // 12 bulan
         }
 
-        // Hitung total cicilan piutang untuk periode yang ditampilkan
-        $totalCicilanPiutang = 0;
-        if ($bulan) {
-            // Jika ada filter bulan, hitung cicilan untuk bulan tersebut
-            $totalCicilanPiutang = Piutang::where('id_pengguna', Auth::user()->id_pengguna)
-                ->whereNotNull('jumlah_cicilan_per_bulan')
-                ->where('jumlah_cicilan_per_bulan', '>', 0)
-                ->where('status', 'aktif')
-                ->sum('jumlah_cicilan_per_bulan');
-        } else {
-            // Jika tidak ada filter bulan, hitung cicilan untuk seluruh tahun
-            $totalCicilanPiutang = Piutang::where('id_pengguna', Auth::user()->id_pengguna)
-                ->whereNotNull('jumlah_cicilan_per_bulan')
-                ->where('jumlah_cicilan_per_bulan', '>', 0)
-                ->where('status', 'aktif')
-                ->sum('jumlah_cicilan_per_bulan') * 12; // 12 bulan
-        }
-
         // Hitung total keseluruhan
         $totalAnggaran = $laporan->sum('jumlah_batas');
         $totalRealisasi = $laporan->sum('total_realisasi');
@@ -302,7 +266,6 @@ class AnggaranController extends Controller
             'totalRealisasi',
             'totalSisa',
             'totalCicilanUtang',
-            'totalCicilanPiutang',
             'tahunList'
         ));
     }
@@ -380,24 +343,6 @@ class AnggaranController extends Controller
                 ->sum('jumlah_cicilan_per_bulan') * 12; // 12 bulan
         }
 
-        // Hitung total cicilan piutang untuk periode yang ditampilkan
-        $totalCicilanPiutang = 0;
-        if ($bulan) {
-            // Jika ada filter bulan, hitung cicilan untuk bulan tersebut
-            $totalCicilanPiutang = Piutang::where('id_pengguna', Auth::user()->id_pengguna)
-                ->whereNotNull('jumlah_cicilan_per_bulan')
-                ->where('jumlah_cicilan_per_bulan', '>', 0)
-                ->where('status', 'aktif')
-                ->sum('jumlah_cicilan_per_bulan');
-        } else {
-            // Jika tidak ada filter bulan, hitung cicilan untuk seluruh tahun
-            $totalCicilanPiutang = Piutang::where('id_pengguna', Auth::user()->id_pengguna)
-                ->whereNotNull('jumlah_cicilan_per_bulan')
-                ->where('jumlah_cicilan_per_bulan', '>', 0)
-                ->where('status', 'aktif')
-                ->sum('jumlah_cicilan_per_bulan') * 12; // 12 bulan
-        }
-
         // Hitung total keseluruhan
         $totalAnggaran = $laporan->sum('jumlah_batas');
         $totalRealisasi = $laporan->sum('total_realisasi');
@@ -419,7 +364,6 @@ class AnggaranController extends Controller
             'totalRealisasi' => $totalRealisasi,
             'totalSisa' => $totalSisa,
             'totalCicilanUtang' => $totalCicilanUtang,
-            'totalCicilanPiutang' => $totalCicilanPiutang,
             'generated_at' => now()->format('d F Y H:i')
         ])->setPaper('a4', 'portrait');
 
